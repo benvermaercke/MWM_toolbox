@@ -19,24 +19,23 @@ clc
 saveIt=1;
 MWMtype=2; % 1: old | 2: new |
 
-%subFolderNames={'00_LAMAN_ERT_batch1eval1_acq','01_LAMAN_ERT_batch1eval1_probe','02_LAMAN_ERT_batch1eval2_acq','03_LAMAN_ERT_batch1eval2_probe','04_LAMAN_ERT_batch2eval1_acq','05_LAMAN_ERT_batch2eval1_probe'}';
-%MWMtype_vector=[1 1 2 2 1 1];
-
-%folder_index=6;
-%dataFolder='E:\LeuvenData\Developement\MWMtoolbox\rawFiles\StijnS_2013-12-18_rawdata'; %
-%dataFolder=fullfile(dataFolder,subFolderNames{folder_index});
-%MWMtype=MWMtype_vector(folder_index);
+data_root='/Users/benvermaercke/Dropbox (Personal)';
 
 if ispc
-    dataFolder='E:\LeuvenData\Developement\MWMtoolbox\rawFiles\ACL_Reversal_acquisition_track';
-    %P2X4_WT_acq
+    data_folder='E:\LeuvenData\Developement\MWMtoolbox\rawFiles\ACL_Reversal_acquisition_track';
+   
 else
-    dataFolder='/Volumes/TeraLacie/LeuvenData/Developement/MWMtoolbox/rawFiles/Disconnection_SearchStrategies';
-    %dataFolder='/Volumes/TeraLacie/LeuvenData/Developement/MWMtoolbox/rawFiles/ACL_Amira/ACL_Amira_Rev';
+    %data_folder='/Volumes/TeraLacie/LeuvenData/Developement/MWMtoolbox/rawFiles/Disconnection_SearchStrategies';
+end
+if ~exist('data_folder','var')
+    curr_dir=pwd;
+    cd(data_root)
+    data_folder=uigetdir(data_root);
+    cd(curr_dir)
 end
 
 
-A=strsplit(filesep,dataFolder);
+A=strsplit(filesep,data_folder);
 databaseName=A{end};
 databaseName(databaseName==' ')='_';
 saveName=['dataSets/' databaseName '.mat'];
@@ -45,24 +44,26 @@ if exist(saveName,'file')
 else
     savec(saveName)
 end
+die
+
 
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Extracting data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-S=rdir([dataFolder filesep '**' filesep '**.csv']);
+S=rdir([data_folder filesep '**' filesep '**.csv']);
 fileType=1;
 if isempty(S)
-    S=rdir([dataFolder filesep '**' filesep '**.xls']);
+    S=rdir([data_folder filesep '**' filesep '**.xls']);
     fileType=2;
 end
 if isempty(S) % look for txt files
     %S=rdir([dataFolder '\**\**.txt']);
-    S=rdir([dataFolder '/**/**.txt']);
+    S=rdir([data_folder '/**/**.txt']);
     fileType=3;
 end
 if isempty(S)
-    error(['No file found in folder: ' dataFolder])
+    error(['No file found in folder: ' data_folder])
 else
     N=length(S);
     %disp([num2str(N) ' files found!'])
