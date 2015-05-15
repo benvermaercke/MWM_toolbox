@@ -5,7 +5,11 @@ header_script
 
 %%% Create database file
 A=strsplit(filesep,data_folder);
-databaseName=A{end};
+if ismac
+    databaseName=A{end};
+else
+    databaseName=A{end-1};
+end
 databaseName(databaseName==' ')='_';
 saveName=['dataSets/' databaseName '.mat'];
 if exist(saveName,'file')
