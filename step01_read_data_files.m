@@ -55,6 +55,7 @@ initXLSreader
 
 t0=clock;
 trackNames=cell(nFiles,1);
+trackInfo_all=struct('Start_time','','Video_file',[],'Tracking_source','','Duration','','Reference_time','','Trial_ID',[],'Arena_index',[],'Object_index',[],'Arena_settings','','Trial_name','','Arena_name','','Subject_name','','Track','','Trial_status','','Acquisition_status','','Track_status','','Recording_after','','Recording_duration','','Video_start_time',[],'Detection_settings','','Trial_control_settings','','Video_file_status','','Sync_status','','Reference_duration','','Sof_file',[],'mouse_ID','','trial',[],'Day',[],'treatment',[],'Lesion','','folderRoot','','folderName','','file_nr',[]);
 for iFile=1:nFiles
     track_name=S(iFile).name;
     trackNames{iFile}=track_name;
@@ -63,9 +64,15 @@ for iFile=1:nFiles
     folderName=strrep(folderName,' ','_');
     
     %%% Append to trackInfo
+    if isfield(trackInfo,'User_defined_1')
+        trackInfo=rmfield(trackInfo,'User_defined_1');
+    end
+    if ~isfield(trackInfo,'Lesion')
+        trackInfo.Lesion='';
+    end
     trackInfo.folderRoot=folderName(1:end-4);
     trackInfo.folderName=folderName;
-    trackInfo.file_nr=iFile;    
+    trackInfo.file_nr=iFile;
     
     %%% join data
     dataMatrix_all(iFile)=dataMatrix;
