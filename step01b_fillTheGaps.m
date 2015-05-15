@@ -3,17 +3,20 @@ clc
 
 header_script
 
-overwrite=1;
+save_it=0;
 
-%filename='ACL_Reversal_acquisition_track.mat';
-loadName=fullfile('dataSets',databaseName)
-% loadName=fullfile('dataSets_17parameters',filename);
+try
+    loadName=fullfile('dataSets',databaseName)
+catch
+    loadName=fullfile('dataSets_17parameters',filename);
+end
 
 load(loadName,'AllTracks')
 M=AllTracks.data;
 
 tracks=unique(M(:,2));
 nTracks=length(tracks);
+die
 
 %%% Run the procedure
 t0=clock;
@@ -37,7 +40,7 @@ end
 
 disp([num2str(count) ' track(s) fixed!'])
 %%% Save the data
-if overwrite==1
+if save_it==1
     %%
     mean(isnan(AllTracks.data(:,5)))
     AllTracks.data=M;
