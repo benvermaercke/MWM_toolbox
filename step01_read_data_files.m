@@ -4,12 +4,8 @@ clc
 header_script
 
 %%% Create database file
-A=strsplit(filesep,data_folder);
-if ismac
-    databaseName=A{end};
-else
-    databaseName=A{end-1};
-end
+A=strsplit(data_folder,filesep);
+databaseName=A{end};
 databaseName(databaseName==' ')='_';
 saveName=['dataSets/' databaseName '.mat'];
 if exist(saveName,'file')
