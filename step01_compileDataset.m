@@ -23,7 +23,6 @@ data_root='/Users/benvermaercke/Dropbox (Personal)';
 
 if ispc
     data_folder='E:\LeuvenData\Developement\MWMtoolbox\rawFiles\ACL_Reversal_acquisition_track';
-   
 else
     %data_folder='/Volumes/TeraLacie/LeuvenData/Developement/MWMtoolbox/rawFiles/Disconnection_SearchStrategies';
 end
@@ -34,7 +33,6 @@ if ~exist('data_folder','var')
     cd(curr_dir)
 end
 
-
 A=strsplit(filesep,data_folder);
 databaseName=A{end};
 databaseName(databaseName==' ')='_';
@@ -44,7 +42,6 @@ if exist(saveName,'file')
 else
     savec(saveName)
 end
-die
 
 
 %%
@@ -65,7 +62,7 @@ end
 if isempty(S)
     error(['No file found in folder: ' data_folder])
 else
-    N=length(S);
+    nFiles=length(S);
     %disp([num2str(N) ' files found!'])
 end
 
@@ -79,17 +76,17 @@ if ispc
 end
 % strip ._ files from S
 count=1;
-for index=1:length(S)
-    if strfind(S(index).name,'._')
+for iFile=1:length(S)
+    if strfind(S(iFile).name,'._')
     else
-        S_new(count)=S(index);
+        S_new(count)=S(iFile);
         count=count+1;
     end
 end
 S=S_new;
-N=length(S);
+nFiles=length(S);
 
-disp([num2str(N) ' files found!'])
+disp([num2str(nFiles) ' files found!'])
 
 %% Convert folder names to suitable format
 folder_names=cell(length(S),1);
@@ -118,8 +115,8 @@ AllTracks.fieldNames={'folderNr','trackNr','sampleNr','time','X-pos','Y-pos'};
 AllTracks.data=[];
 count=1;
 t0=clock;
-for index=1:N
-    progress(index,N,t0,count)
+for i=1:nFiles
+    progress(index,nFiles,t0,count)
     filename=S(index).name;
     
     % Get current subfolder
