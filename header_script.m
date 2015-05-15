@@ -25,5 +25,10 @@ if ~exist('data_folder','var')
     cd(path_dir)
 end
 
+%%% Construct databse name
+A=strsplit(data_folder,filesep);
+databaseName=A{end};
+databaseName(databaseName==' ')='_';
+
 fprintf('Working from %s\n',data_folder)
 

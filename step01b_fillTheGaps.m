@@ -1,15 +1,12 @@
 clear all
 clc
 
+header_script
+
 overwrite=1;
 
-% filename='ACL_2013_12_presymp1.mat';
-% subFolderNames={'00_LAMAN_ERT_batch1eval1_acq','01_LAMAN_ERT_batch1eval1_probe','02_LAMAN_ERT_batch1eval2_acq','03_LAMAN_ERT_batch1eval2_probe','04_LAMAN_ERT_batch2eval1_acq','05_LAMAN_ERT_batch2eval1_probe'};
-% filename=subFolderNames{6}
-%rootFolder=fileparts(mfilename('fullpath'))
-%filename='ACL_Reference_memory_acquisition_track.mat';
-filename='ACL_Reversal_acquisition_track.mat';
-loadName=fullfile('dataSets',filename)
+%filename='ACL_Reversal_acquisition_track.mat';
+loadName=fullfile('dataSets',databaseName)
 % loadName=fullfile('dataSets_17parameters',filename);
 
 load(loadName,'AllTracks')
