@@ -3,8 +3,7 @@ clc
 
 header_script
 
-saveIt=0;
-
+%%% Create database file
 A=strsplit(filesep,data_folder);
 databaseName=A{end};
 databaseName(databaseName==' ')='_';
@@ -15,6 +14,7 @@ else
     savec(saveName)
 end
 
+%%% Find files
 S=rdir([data_folder filesep '**' filesep '**.csv']);
 fileType=1;
 if isempty(S)
@@ -48,44 +48,24 @@ for iFile=1:nFiles
 end
 S=S_new;
 nFiles=length(S);
-
 disp([num2str(nFiles) ' files found!'])
-
-if 0
-    %% Convert folder names to suitable format
-    folder_names=cell(length(S),1);
-    for iFile=1:length(S)
-        [f,fn,ext]=fileparts(S(iFile).name);
-        parts=strsplit(filesep,f);
-        folder_name=parts{end};
-        switch length(strfind(folder_name,' '))
-            case 1
-                str=char(sscanf(folder_name,'%s D%*d'))';
-                num=sscanf(folder_name,'%*s D%d');
-            case 2
-                str=char(sscanf(folder_name,'%s%c%s D%*d'))';
-                num=sscanf(folder_name,'%*s %*s D%d');
-            otherwise
-                error('no format defined for folder name')
-        end
-        new_folder_name=[strrep(str,' ','_') '_' sprintf('%03d',num)];
-        folder_names{iFile}=new_folder_name;
-    end
-    folder_list=unique(folder_names);
-end
 
 %% Read files
 initXLSreader
 
 t0=clock;
-for iFile=1:30%nFiles
-    [dataMatrix, trackInfo]=readXLSdata(S(iFile).name,3);
-    folderName=getFolderName(S(iFile).name);
+trackNames=cell(nFiles,1);
+for iFile=1:nFiles
+    track_name=S(iFile).name;
+    trackNames{iFile}=track_name;
+    [dataMatrix, trackInfo]=readXLSdata(track_name,3);
+    folderName=getFolderName(track_name);
     folderName=strrep(folderName,' ','_');
     
     %%% Append to trackInfo
-    trackInfo.file_nr=iFile;
+    trackInfo.folderRoot=folderName(1:end-4);
     trackInfo.folderName=folderName;
+    trackInfo.file_nr=iFile;    
     
     %%% join data
     dataMatrix_all(iFile)=dataMatrix;
@@ -94,13 +74,20 @@ for iFile=1:30%nFiles
 end
 
 %% Post processing
-folderNames=cat(1,trackInfo_all.folderName);
-mapping=getMapping(folderNames)
+group_mapping=getMapping({trackInfo_all.folderRoot});
+folder_mapping=getMapping({trackInfo_all.folderName});
+day_mapping=cat(1,trackInfo_all.Day);
+ID_mapping=getMapping({trackInfo_all.mouse_ID});
+trial_mapping=cat(1,trackInfo_all.trial);
 
+demographics=[folder_mapping group_mapping day_mapping ID_mapping trial_mapping];
+TrackInfo=trackInfo_all;
+AllTracks=dataMatrix_all;
 
 %%
-if save_it==1
+if saveIt==1
     nTracks=length(TrackInfo);
     trackClassification_vector=zeros(nTracks,1);
-    save(saveName,'nTracks','folderList','trackNames','AllTracks','TrackInfo','trackClassification_vector','MWMtype')
+    save(saveName,'nTracks','demographics','trackNames','AllTracks','TrackInfo','trackClassification_vector','MWMtype')
 end
+

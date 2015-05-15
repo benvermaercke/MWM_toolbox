@@ -20,10 +20,9 @@ end
 
 %%% select folder with GUI if not specified
 if ~exist('data_folder','var')
-    curr_dir=pwd;
     cd(data_root)
     data_folder=uigetdir(data_root);
-    cd(curr_dir)
+    cd(path_dir)
 end
 
 fprintf('Working from %s\n',data_folder)
