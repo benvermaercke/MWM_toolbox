@@ -98,7 +98,6 @@ folderNames=cat(1,trackInfo_all.folderName);
 mapping=getMapping(folderNames)
 
 
-
 %%
 if save_it==1
     nTracks=length(TrackInfo);
