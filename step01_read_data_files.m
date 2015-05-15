@@ -51,26 +51,28 @@ nFiles=length(S);
 
 disp([num2str(nFiles) ' files found!'])
 
-%% Convert folder names to suitable format
-folder_names=cell(length(S),1);
-for iFile=1:length(S)
-    [f,fn,ext]=fileparts(S(iFile).name);
-    parts=strsplit(filesep,f);
-    folder_name=parts{end};
-    switch length(strfind(folder_name,' '))
-        case 1
-            str=char(sscanf(folder_name,'%s D%*d'))';
-            num=sscanf(folder_name,'%*s D%d');
-        case 2
-            str=char(sscanf(folder_name,'%s%c%s D%*d'))';
-            num=sscanf(folder_name,'%*s %*s D%d');
-        otherwise
-            error('no format defined for folder name')
+if 0
+    %% Convert folder names to suitable format
+    folder_names=cell(length(S),1);
+    for iFile=1:length(S)
+        [f,fn,ext]=fileparts(S(iFile).name);
+        parts=strsplit(filesep,f);
+        folder_name=parts{end};
+        switch length(strfind(folder_name,' '))
+            case 1
+                str=char(sscanf(folder_name,'%s D%*d'))';
+                num=sscanf(folder_name,'%*s D%d');
+            case 2
+                str=char(sscanf(folder_name,'%s%c%s D%*d'))';
+                num=sscanf(folder_name,'%*s %*s D%d');
+            otherwise
+                error('no format defined for folder name')
+        end
+        new_folder_name=[strrep(str,' ','_') '_' sprintf('%03d',num)];
+        folder_names{iFile}=new_folder_name;
     end
-    new_folder_name=[strrep(str,' ','_') '_' sprintf('%03d',num)];
-    folder_names{iFile}=new_folder_name;
+    folder_list=unique(folder_names);
 end
-folder_list=unique(folder_names);
 
 %% Read files
 initXLSreader
@@ -83,9 +85,9 @@ for iFile=1:30%nFiles
     
     %%% Append to trackInfo
     trackInfo.file_nr=iFile;
-    trackInfo.folderName=folderName;     
+    trackInfo.folderName=folderName;
     
-    %%% join data    
+    %%% join data
     dataMatrix_all(iFile)=dataMatrix;
     trackInfo_all(iFile)=trackInfo;
     progress(iFile,nFiles,t0)
@@ -101,5 +103,5 @@ mapping=getMapping(folderNames)
 if save_it==1
     nTracks=length(TrackInfo);
     trackClassification_vector=zeros(nTracks,1);
-    save(saveName,'nTracks','folderList','trackNames','AllTracks','TrackInfo','trackClassification_vector','MWMtype') 
+    save(saveName,'nTracks','folderList','trackNames','AllTracks','TrackInfo','trackClassification_vector','MWMtype')
 end
