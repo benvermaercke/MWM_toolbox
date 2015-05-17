@@ -317,4 +317,21 @@ end
 
 
 %% New fast analysis view
+nGroups=length(group_list);
+M=[demographics decisions];
 
+nClasses=9;
+for iGroup=1:nGroups
+    group_data=M(M(:,2)==iGroup,:);
+    folder_nrs=unique(group_data(:,1));
+    nFolders=length(folder_nrs);
+    dataMatrix=zeros(nFolders,nClasses);
+    for iFolder=1:nFolders
+        folder_data=group_data(group_data(:,1)==folder_nrs(iFolder),:);
+        dataMatrix(iFolder,:)=hist(folder_data(:,6),nClasses);
+    end
+    subplot(2,2,iGroup)
+    bar(dataMatrix,'stacked')
+    axis tight
+    
+end
