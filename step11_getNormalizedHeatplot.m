@@ -4,7 +4,7 @@ clc
 header_script_MWM
 
 plotIt=1;
-saveIt=0;
+saveIt=1;
 kernelSize=30; % was 35
 nPerm=2; % Determines number of random distributions to base population on (usually 10)
 rescaleFactor=2; % improves the resolution of the resulting eps image
@@ -27,9 +27,9 @@ switch window_type
         nOverlap=0;
 end
 
-saveName=fullfile('dataSets',databaseName);
+loadName=fullfile('dataSets',databaseName);
 %saveName=fullfile('dataSets_17parameters',databaseName);
-load(saveName)
+load(loadName)
 allTracks=cat(1,AllTracks.data);
 
 X_min=min(allTracks(:,2));
@@ -45,7 +45,7 @@ switch use_sorting
     case 'days'
         groupAllocation_vector=TrialAllocation.data(:,4);
     case 'batch-days'
-        batch_select=2;
+        batch_select=4;
         sel=TrialAllocation.data(:,3)==batch_select;
         groupAllocation_vector=TrialAllocation.data(sel,1);
 end
@@ -99,7 +99,8 @@ for interval=1:nIntervals
         
         selectedTracks=find(ismember(groupAllocation_vector,group_nr));
                 
-        saveName=['output\' databaseName '\' databaseName '_' groupName '_T_' padZeros(timeInterval(1),3) '-' padZeros(timeInterval(2),3) '.png'];        
+        %saveName=['output\' databaseName '\' databaseName '_' groupName '_T_' padZeros(timeInterval(1),3) '-' padZeros(timeInterval(2),3) '.png'];
+        saveName=fullfile('output',databaseName,[databaseName '_' groupName '_T_' padZeros(timeInterval(1),3) '-' padZeros(timeInterval(2),3) '.png']);
         if saveIt==0 || ~exist(saveName,'file')
                        
             if max(allTracks(:,3))>nTotal
