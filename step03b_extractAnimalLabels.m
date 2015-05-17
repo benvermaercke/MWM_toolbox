@@ -3,11 +3,11 @@ clc
 
 header_script_MWM
 
-saveIt=0;
+%saveIt=0;
 
 %%% Load dataset
 loadName=fullfile('dataSets',databaseName);
-% loadName=fullfile('dataSets_17parameters',filename);
+% loadName=fullfile('dataSets_17parameters',databaseName);
 load(loadName)
 
 %% Construct list of unique subjects
@@ -16,26 +16,26 @@ dayNr_vector=zeros(nTracks,1);
 ID_list=cell(nTracks,1);
 
 for index=1:nTracks
-    if isfield(TrackInfo{index},'group')
+    if isfield(TrackInfo(index),'group')
         group_list{index}=TrackInfo{index}.group;
     else
         group_list{index}='';
     end
     
-    if isfield(TrackInfo{index},'GENOTYPE')
+    if isfield(TrackInfo(index),'GENOTYPE')
         group_list{index}=TrackInfo{index}.GENOTYPE;
     else
         group_list{index}='';
     end
     
-    if isfield(TrackInfo{index},'conditie')
+    if isfield(TrackInfo(index),'conditie')
         group_list{index}=TrackInfo{index}.conditie;
     else
         group_list{index}='';
     end
     
-    if isfield(TrackInfo{index},'Day')
-        day=TrackInfo{index}.Day;
+    if isfield(TrackInfo(index),'Day')
+        day=TrackInfo(index).Day;
         if isnumeric(day)
             dayNr_vector(index)=day;
         else
@@ -47,7 +47,7 @@ for index=1:nTracks
         end
     end
     
-    if isfield(TrackInfo{index},'day')
+    if isfield(TrackInfo(index),'day')
         day=TrackInfo{index}.day;
         if isnumeric(day)
             dayNr_vector(index)=day;
@@ -60,21 +60,21 @@ for index=1:nTracks
         end
     end
     
-    if isfield(TrackInfo{index},'Trial_block')
+    if isfield(TrackInfo(index),'Trial_block')
         dayNr_vector(index)=TrackInfo{index}.Trial_block;
     end
-    if isfield(TrackInfo{index},'TRIAL_NUMBER')
+    if isfield(TrackInfo(index),'TRIAL_NUMBER')
         dayNr_vector(index)=TrackInfo{index}.TRIAL_NUMBER;
     end
     
-    if isfield(TrackInfo{index},'Probe')
+    if isfield(TrackInfo(index),'Probe')
         %dayNr_vector(index)=TrackInfo{index}.Probe;
     end
     
-    if isfield(TrackInfo{index},'Subject_name')
-        mouseID=TrackInfo{index}.Subject_name;
+    if isfield(TrackInfo(index),'Subject_name')
+        mouseID=TrackInfo(index).Subject_name;
     else        
-        if isfield(TrackInfo{index},'Mouse_ID')
+        if isfield(TrackInfo(index),'Mouse_ID')
             mouseID=TrackInfo{index}.Mouse_ID;
         elseif isfield(TrackInfo{index},'mouse_ID')
             mouseID=TrackInfo{index}.mouse_ID;
@@ -112,14 +112,18 @@ end
 
 TrialAllocation.fieldNames={'FolderNum','TrackNr','GroupNr','DayNr','SubjectNr','TrackClassification'};
 %TrialAllocation.data=[unique(AllTracks.data(:,[1 2]),'rows') subjectGroupMapping_vector dayNr_vector subjectTrackMapping_vector trackClassification_vector_oldModel];
-TrialAllocation.data=[unique(AllTracks.data(:,[1 2]),'rows') subjectGroupMapping_vector dayNr_vector subjectTrackMapping_vector trackClassification_vector];
+TrialAllocation.data=[demographics(:,1) (1:nTracks)' demographics(:,2:4) trackClassification_vector];
 
 unique(pivotTable2(TrialAllocation.data,4:5,'length',1))
 
-if overwrite==1    
+[group_mapping,group_list]=getMapping({TrackInfo.folderRoot});
+[folder_mapping,folder_list]=getMapping({TrackInfo.folderName});
+[ID_mapping,ID_list]=getMapping({TrackInfo.mouse_ID});
+
+if saveIt==1    
     %%    
     %save(loadName,'AllTracks','TrackInfo','poolCoords','platFormCoords','nTracks','folderList','trackNames','trackClassification_vector','TrackStatsExist','TrackStatistics','TrackStatMatrix','subjectList','TrialAllocation','ID_list')
-    save(loadName,'groupList','subjectList','TrialAllocation','group_list','ID_list','-append')
+    save(loadName,'TrialAllocation','folder_list','group_list','ID_list','-append')
     %save(loadName,'ID_list','-append')
 end
 

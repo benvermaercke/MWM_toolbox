@@ -23,35 +23,30 @@ clc
 
 
 %% Be careful to only load the model once!
+tic
 nIter=200;
 modelName=['models/SVMclassifierMWMdata_nIter_' num2str(nIter) '_oldModel.mat'];
 %load(modelName,'classificationStrings')
 %die
 load(modelName,'SVMmodels','perfMatrix','classificationStrings','COMP','nComp','class_vector')
+disp('Loaded big model file')
+toc
 
 %%
-%filename='ACL_Reference_memory_acquisition_track.mat';
-filename='ACL_Reversal_acquisition_track.mat';
-
-%file_index=6;
-%subFolderNames={'00_LAMAN_ERT_batch1eval1_acq','01_LAMAN_ERT_batch1eval1_probe','02_LAMAN_ERT_batch1eval2_acq','03_LAMAN_ERT_batch1eval2_probe','04_LAMAN_ERT_batch2eval1_acq','05_LAMAN_ERT_batch2eval1_probe'};
-%filename=subFolderNames{file_index}
-
+header_script_MWM
 
 plotIt=0;
 probeData=0; % treat data as probe trial or not
 windowType=0; % if >0 => probeData=0
 before_or_after=1;
 
-saveIt=1;
+%saveIt=0;
 writeExcel=1;
 
-saveName=fullfile('dataSets_17parameters',filename);
+saveName=fullfile('dataSets',databaseName);
+%saveName=fullfile('dataSets_17parameters',filename);
 load(saveName)
 allTracks=AllTracks.data;
-
-tracks=unique(allTracks(:,2));
-nTracks=length(tracks);
 
 if exist('poolCoords','var')
     centerCoords=poolCoords.center;
@@ -93,22 +88,22 @@ nWindows=size(timePoints,1);
 
 timePoints
 
-%%%
+%%
 trackAllocation_vector=zeros(nTracks,1);
 Latency_vector=zeros(nTracks,1);
 samplesUsePerTrack=trackAllocation_vector;
 t0=clock;
 count=1;
-for track_index=1:nTracks
-    progress(track_index,nTracks,t0)
-    trackNr=tracks(track_index);
-    swimTrack=allTracks(ismember(allTracks(:,2),trackNr),4:6);
+for iTrack=1:nTracks    
+    %trackNr=tracks(iTrack);
+    swimTrack=AllTracks(iTrack).data;
+    %swimTrack=allTracks(ismember(allTracks(:,2),trackNr),4:6);
     for index=1:size(timePoints,1)
         if probeData==0
             timeSelection=between(swimTrack(:,1),timePoints(index,:)-[1 0]);
         else
             Latency=getLatencyProbe(swimTrack,platFormCoords);
-            Latency_vector(track_index)=Latency;
+            Latency_vector(iTrack)=Latency;
             switch before_or_after
                 case 1
                     timeSelection=swimTrack(:,1)<=Latency;
@@ -125,6 +120,7 @@ for track_index=1:nTracks
             
             %between(swimTrack(:,1),timePoints(index,:)-[1 0]);
         end
+        
         if sum(timeSelection)>5
             data=swimTrack(timeSelection,:);
             
@@ -150,6 +146,8 @@ for track_index=1:nTracks
                     line(data_cut(:,2),data_cut(:,3),'color','r','marker','.')
                     axis([-154 154 -154 154])
                     axis ij
+                    axis equal
+                    axis tight
                 end
                 
                 
@@ -159,21 +157,25 @@ for track_index=1:nTracks
                 disp('Data shows no variation')
             else
                 %groupNr=platFormCoords.platformAllocation(trackNr);
-                platFormCoords_thisTrack=platFormCoords;
+                PF=platFormCoords.coords(platFormCoords.PF_matrix(iTrack,6));
+                platFormCoords_thisTrack.current=PF.center;
+                platFormCoords_thisTrack.targetZoneRadius=PF.targetZoneRadius;
+                
                 %platFormCoords_thisTrack.current=platFormCoords_thisTrack.platformPositions(groupNr,:);
-                [trackProps vector]=getTrackStats_used(data,poolCoords,[],platFormCoords_thisTrack);
+                [trackProps, vector]=getTrackStats_used(data,poolCoords,[],platFormCoords_thisTrack);
                 
                 %plot(data(:,2),data(:,3))
                 %box off
                 %title(sci(vector(end)))
-                trackAllocation_vector(track_index)=track_index;
+                trackAllocation_vector(iTrack)=iTrack;
                 count=count+1;
                 
-                SVMmatrix(track_index,:)=vector;
-                samplesUsePerTrack(track_index)=mean(timeSelection);
+                SVMmatrix(iTrack,:)=vector;
+                samplesUsePerTrack(iTrack)=mean(timeSelection);
             end
         end
     end
+    progress(iTrack,nTracks,t0)
 end
 
 
@@ -215,9 +217,9 @@ switch windowType
                 blank=NaN(nTracks,1);
                 output=[folder_vector blank blank decisions];
                 
-                folderNames=folderList(folder_vector)';
-                folderNumberList={'1';'2'};
-                folderNumbers=folderNumberList(folder_vector);
+                folderNames=folder_list(folder_vector)';
+                %folderNumberList={'1';'2'};
+                %folderNumbers=folderNumberList(folder_vector);
                
                 %trackNames;
                 
@@ -225,10 +227,7 @@ switch windowType
                 % [L T]
                 
                 templateName='templates/templateOutput.xlsx';
-                [a core ext]=fileparts(filename);
-                
-                %xlsName=['output\' core '_searchStrategies.xlsx'];
-                xlsName=['output/' core '_searchStrategies_' windowTypeName '.xlsx'];
+                xlsName=['output/' databaseName '_searchStrategies_' windowTypeName '.xlsx'];
                 
                 % Use template as base for the output file
                 copyfile(templateName,xlsName);
@@ -266,16 +265,18 @@ switch windowType
                     javaaddpath(fullfile(xlPath,'poi_library/dom4j-1.6.1.jar'));
                     javaaddpath(fullfile(xlPath,'poi_library/stax-api-1.0.1.jar'));
                     
+                    ID_list_vector=ID_list(TrialAllocation.data(:,5))';
+                    
                     % Create cell array containing all data
-                    excelMatrix=[arrayfun(@mean, folder_vector, 'unif', 0) folderNames trackNames arrayfun(@mean, TrialAllocation.data(:,4), 'unif', 0) arrayfun(@mean, TrialAllocation.data(:,5), 'unif', 0) ID_list arrayfun(@mean, decisions, 'unif', 0)];
+                    excelMatrix=[arrayfun(@mean, folder_vector, 'unif', 0) folderNames trackNames arrayfun(@mean, TrialAllocation.data(:,4), 'unif', 0) arrayfun(@mean, TrialAllocation.data(:,5), 'unif', 0) ID_list_vector arrayfun(@mean, decisions, 'unif', 0)];
                     
                     % write individual track data
                     xlwrite(xlsName,excelMatrix,'Sheet1','A3');
                     
                     % write summary data
                     sumData=pivotTable2(output,1,'hist',4,'1:9',1);
-                    nFolders=length(folderList);
-                    summaryData=[folderList' arrayfun(@mean, sumData, 'unif', 0)];
+                    nFolders=length(folder_list);
+                    summaryData=[folder_list' arrayfun(@mean, sumData, 'unif', 0)];
                     xlwrite(xlsName,summaryData,'Sheet2','A2');
                     %xlswrite(xlsName,folderList','Sheet2',['A2:A' num2str(nFolders+1)]);
                     %xlswrite(xlsName,sumData,'Sheet2',['B2:J' num2str(nFolders+1)]);
@@ -314,86 +315,6 @@ switch windowType
         output_allWindows
 end
 
-%
-%
-%
-% %%
-% D=[trackAllocation_vector decisions];
-% %
-% windows=pivotTable2(D,1,'',2,[],1);
-% %bar(windows(21,:))
-%
-% folder_vector=TrialAllocation.data(:,1);
-% group_vector=TrialAllocation.data(:,3);
-% trial_vector=rem(folder_vector-1,12)+1;
-%
-% intervals=1:16;
-% %intervals=linspace(1,16,4);
-% nIntervals=length(intervals);
-%
-% %D=[group_vector trial_vector ceil(windows(:,[1 6 11 16])/3)];
-% D=[group_vector trial_vector ceil(windows(:,intervals)/3)];
-% %D=[group_vector trial_vector ceil(windows/3)];
-% %
-% switch 1
-%     case 1
-%         nRows=4;
-%         nCols=ceil(nIntervals/nRows);
-%     case 2
-%         nCols=5;
-%         nRows=ceil(nIntervals/nCols);
-%     case 3
-%         nRows=2;
-%         nCols=ceil(nIntervals/nRows);
-% end
-%
-% for interval_index=1:nIntervals
-%     intervalNr=intervals(interval_index);
-%     M=pivotTable2(D,1:2,'mean',interval_index+2,[],1);
-%     E=pivotTable2(D,1:2,'ste',interval_index+2,[],1);
-%     subplot(nRows,nCols,interval_index)
-%     b=errorbar(M',E','.-');
-%     box off
-%     axis([0 13 .5 3.5])
-%     title(['Interval nr: ' num2str(intervalNr)])
-%     set(gca,'ButtonDownFcn',{@switchFcn,get(gca,'position')})
-%     set(gca,'xTick',floor(linspace(0,12,5)),'xGrid','on','yTick',[1 2 3],'yGrid','on')
-% end
-% legend(b,groupList,'location','best')
-%
-% %%
-%
-% for interval=1:16
-%     data(:,interval)=pivotTable2(D,1:2,'mean',2+interval)';
-%     errors(:,interval)=pivotTable2(D,1:2,'ste',2+interval)';
-% end
-%
-% clf
-% for day=1:12
-%     subplot(3,4,day)
-%     hold on
-%     b(1)=errorbar(data(day,:),errors(day,:),'r.-');
-%     b(2)=errorbar(data(day+12,:),errors(day+12,:),'g.-');
-%     b(3)=errorbar(data(day+24,:),errors(day+24,:),'b.-');
-%     hold off
-%     box off
-%     axis([0 17 .5 3.5])
-%     title(['Day ' num2str(day)])
-%     legend(b,groupList,'location','best')
-%     set(gca,'ButtonDownFcn',{@switchFcn,get(gca,'position')})
-%     set(gca,'xTick',linspace(1,16,4),'xGrid','on','yTick',[1 2 3],'yGrid','on')
-% end
-%
-% % => now make excel file containing track and folder names and track
-% % classifications
-%
-% % trackClassification_vector_oldModel=decisions;
-% % startegiesPerTrack=pivotTable2(decisions,1,'hist',1,'1:9',1);
-% %
-% % overwrite=0;
-% % if overwrite==1
-% %     trackClassification_rankMatrix=dataMatrix;
-% %     save(saveName,'trackClassification_vector_oldModel','trackClassification_rankMatrix','SVMmatrix','timePoints','startegiesPerTrack','-append')
-% % end
-%
-%
+
+%% New fast analysis view
+

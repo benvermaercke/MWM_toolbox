@@ -1,4 +1,4 @@
-function [trackProps vector]= getTrackStats_used(varargin)
+function [trackProps, vector]= getTrackStats_used(varargin)
 
 if nargin>=1
     track=varargin{1};
@@ -31,25 +31,25 @@ startPosition=track(1,2:3);
 
 % get angels and stepsizes of this track
 M=[track(:,2:3) vertcat(startPosition,track(1:end-1,2:3))];
-[angles_actual stepSize_actual]=cart2pol(diff(M(:,[1 3]),[],2),diff(M(:,[2 4]),[],2));
+[angles_actual, stepSize_actual]=cart2pol(diff(M(:,[1 3]),[],2),diff(M(:,[2 4]),[],2));
 angles_actual_unwrap=(unwrap(angles_actual));
 
 % get initial heading
 startHeading=angles_actual_unwrap(2);
 
 % convert to polar coordinates relative to starting position
-[PHI_start RHO_start]=cart2pol(track(:,2)-startPosition(1),track(:,3)-startPosition(2));
-[PHI_start2platform RHO_start2platform]=cart2pol(platformCoords.current(1)-startPosition(1),platformCoords.current(2)-startPosition(2));
+[PHI_start, RHO_start]=cart2pol(track(:,2)-startPosition(1),track(:,3)-startPosition(2));
+[PHI_start2platform, RHO_start2platform]=cart2pol(platformCoords.current(1)-startPosition(1),platformCoords.current(2)-startPosition(2));
 
 % convert to centralized polar coordinates to simplify circular measures
-[PHI_center RHO_center]=cart2pol(track(:,2)-centerCoords(1),track(:,3)-centerCoords(2));
+[PHI_center, RHO_center]=cart2pol(track(:,2)-centerCoords(1),track(:,3)-centerCoords(2));
 
 % convert to polar coordinates relative to platform
-[PHI_platform RHO_platform]=cart2pol(track(:,2)-platformCoords.current(1),track(:,3)-platformCoords.current(2));
+[PHI_platform, RHO_platform]=cart2pol(track(:,2)-platformCoords.current(1),track(:,3)-platformCoords.current(2));
 
 % convert to polar coordinates relative to swim path centroid
 centroid=mean(track(:,2:3));
-[PHI_centroid RHO_centroid]=cart2pol(track(:,2)-centroid(1),track(:,3)-centroid(2));
+[PHI_centroid, RHO_centroid]=cart2pol(track(:,2)-centroid(1),track(:,3)-centroid(2));
 
 
 % pathlength

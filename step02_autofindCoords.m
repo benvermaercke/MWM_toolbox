@@ -91,7 +91,7 @@ for iClust=1:nClust
     sel=mapping==iClust;
     platFormCoords.coords(iClust).center=mean(endCoords(sel,3:4));
     platFormCoords.coords(iClust).radius=mean([mean(endCoords(sel,3:4))-prctile(endCoords(sel,3:4),1) prctile(endCoords(sel,3:4),99)-mean(endCoords(sel,3:4))]);    
-    platFormCoords.coords(iClust).targetZoneRadius=radius*2.5;
+    platFormCoords.coords(iClust).targetZoneRadius=platFormCoords.coords(iClust).radius*2.5;
 end
 
 %% Assign a platform location to each track, on a by folder basis. Using the known end positions of successful tracks

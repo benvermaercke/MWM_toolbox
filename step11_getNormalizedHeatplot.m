@@ -1,8 +1,10 @@
 clear all
 clc
 
+header_script_MWM
+
 plotIt=1;
-saveIt=1;
+saveIt=0;
 kernelSize=30; % was 35
 nIter=10; % Determines number of random distributions to base population on (usually 10)
 rescaleFactor=2; % improves the resolution of the resulting eps image
@@ -26,13 +28,10 @@ switch window_type
         nOverlap=0;
 end
 
-%saveName=fullfile('dataSets',filename);
-saveName=fullfile('dataSets_17parameters',filename);
+saveName=fullfile('dataSets',databaseName);
+%saveName=fullfile('dataSets_17parameters',databaseName);
 load(saveName)
 allTracks=AllTracks.data;
-
-tracks=unique(allTracks(:,2));
-nTracks=length(tracks);
 
 X_min=min(allTracks(:,5));
 Y_min=min(allTracks(:,6));
