@@ -1,17 +1,12 @@
 clear all
 clc
 
-overwrite=1;
+header_script_MWM
+
+saveIt=0;
 
 %%% Load dataset
-%filename='ACL_Reference_memory_acquisition_track.mat';
-filename='ACL_Reversal_acquisition_track.mat';
-
-%file_index=6;
-%subFolderNames={'00_LAMAN_ERT_batch1eval1_acq','01_LAMAN_ERT_batch1eval1_probe','02_LAMAN_ERT_batch1eval2_acq','03_LAMAN_ERT_batch1eval2_probe','04_LAMAN_ERT_batch2eval1_acq','05_LAMAN_ERT_batch2eval1_probe'};
-%filename=subFolderNames{file_index}
-
-loadName=fullfile('dataSets',filename);
+loadName=fullfile('dataSets',databaseName);
 % loadName=fullfile('dataSets_17parameters',filename);
 load(loadName)
 
