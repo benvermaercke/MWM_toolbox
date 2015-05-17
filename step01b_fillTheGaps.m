@@ -1,7 +1,7 @@
 clear all
 clc
 
-header_script
+header_script_MWM
 
 %saveIt=0;
 

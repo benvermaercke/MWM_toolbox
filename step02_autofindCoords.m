@@ -1,7 +1,7 @@
 clear all
 %clc
 
-header_script
+header_script_MWM
 
 platform_present=1;
 plotIt=1;
@@ -16,7 +16,7 @@ overwrite=0;
 
 loadName=fullfile('dataSets',databaseName);
 % loadName=fullfile('dataSets_17parameters',filename);
-load(loadName)
+load(loadName,'AllTracks','nTracks','demographics','TrackInfo')
 
 M=cat(1,AllTracks.data);
 X=M(:,2);
@@ -91,15 +91,16 @@ if nClust==2
     end
 end
 
+%%
 PF_allocation=NaN(nTracks,1);
 PF_allocation(failure_trials==0)=mapping;
 
 PF_matrix=[demographics PF_allocation(:)];
 
-nFolders=length(unique(PF_matrix(:,3)));
+nFolders=length(unique(PF_matrix(:,1)));
 
 for iFolder=1:nFolders
-    sel=PF_matrix(:,3)==iFolder;
+    sel=PF_matrix(:,1)==iFolder;
     PF_matrix(sel,6)=fillTheGaps2(PF_matrix(sel,6));
 end
 
