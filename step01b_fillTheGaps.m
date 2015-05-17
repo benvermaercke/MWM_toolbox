@@ -3,7 +3,7 @@ clc
 
 header_script
 
-save_it=0;
+%saveIt=0;
 
 try
     loadName=fullfile('dataSets',databaseName);
@@ -18,10 +18,12 @@ t0=clock;
 count=0;
 emptyFiles=[];
 for iTrack=1:nTracks
-    M=AllTracks(iTrack).data;    
-    if any(isnan(check(:)))
+    M=AllTracks(iTrack).data;
+    if any(isnan(M(:)))
+        tic
         M(:,2)=fillTheGaps2(M(:,2));
-        M(:,3)=fillTheGaps2(:,3);
+        M(:,3)=fillTheGaps2(M(:,3));
+        toc
         count=count+1;
     end
     AllTracks(iTrack).data=M;
@@ -30,7 +32,8 @@ end
 
 disp([num2str(count) ' track(s) fixed!'])
 %%% Save the data
-if save_it==1
+if saveIt==1
     %%
     save(loadName,'AllTracks','-append')
+    disp('Data saved!')
 end

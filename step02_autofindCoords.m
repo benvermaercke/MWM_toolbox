@@ -1,38 +1,26 @@
 clear all
 %clc
 
+header_script
+
 platform_present=1;
 plotIt=1;
-overwrite=1;
+overwrite=0;
 
-switch 1
-    case 1
-        
-    case 2
-        file_index=2;
-        subFolderNames={'00_LAMAN_ERT_batch1eval1_acq','01_LAMAN_ERT_batch1eval1_probe','02_LAMAN_ERT_batch1eval2_acq','03_LAMAN_ERT_batch1eval2_probe','04_LAMAN_ERT_batch2eval1_acq','05_LAMAN_ERT_batch2eval1_probe'};
-        platForm_present_vector=[1 0 1 0 1 0];
-        filename_acq_vector=[1 1 3 3 5 5];
-        filename=subFolderNames{file_index}
-        platform_present=platForm_present_vector(file_index)
-        filename_acq_index=filename_acq_vector(file_index)
-        filename_acq=subFolderNames{filename_acq_index}
-end
+% %filename='ACL_Reference_memory_acquisition_track.mat';
+% filename='ACL_Reversal_acquisition_track.mat';
+% if platform_present==0
+%     filename_acq='ACL_Amira_Acq.mat';
+%     %filename_acq=subFolderNames{filename_acq_index}
+% end
 
-
-%filename='ACL_Reference_memory_acquisition_track.mat';
-filename='ACL_Reversal_acquisition_track.mat';
-if platform_present==0
-    filename_acq='ACL_Amira_Acq.mat';
-    %filename_acq=subFolderNames{filename_acq_index}
-end
-
-loadName=fullfile('dataSets',filename);
+loadName=fullfile('dataSets',databaseName);
 % loadName=fullfile('dataSets_17parameters',filename);
 load(loadName)
 
-X=AllTracks.data(:,5);
-Y=AllTracks.data(:,6);
+M=cat(1,AllTracks.data);
+X=M(:,2);
+Y=M(:,3);
 
 %%% find center of points
 switch 1
@@ -64,17 +52,68 @@ end
 poolCoords.radius=radius;
 
 %% find all last points of each track
-M=AllTracks.data;
-lastRows=[unique(M(:,2)) pivotTable(M,2,'max',3)];
-endCoordsSelection=lastRows(:,2)<500;
-lastRows=lastRows(endCoordsSelection,:);
-
-endCoords=zeros(size(lastRows,1),2);
-t0=clock;
-for index=1:size(lastRows,1)
-    progress(index,size(lastRows,1),t0)
-    endCoords(index,:)=M(M(:,2)==lastRows(index,1)&M(:,3)==lastRows(index,2),5:6);
+endCoords=zeros(nTracks,4);
+for iTrack=1:nTracks
+    track_data=AllTracks(iTrack).data;
+    endCoords(iTrack,:)=[iTrack size(track_data,1) track_data(end,2:3)];
 end
+failure_trials=endCoords(:,2)==max(endCoords(:,2));
+endCoords(failure_trials==1,:)=[];
+[mean(endCoords(:,3:4)) std(endCoords(:,3:4))]
+
+%%
+nPlatform_pos=4;
+colors={'r','g','b','k','m','c'};
+vector=zeros(nPlatform_pos,1);
+for iPF=1:nPlatform_pos
+    mapping=kmeans(endCoords(:,3:4),iPF);
+    vector(iPF)=mean(pivotTable([mapping endCoords(:,3:4)],1,'std',2));
+    
+    subplot(3,2,iPF)    
+    for iClust=1:iPF
+        sel=mapping==iClust;
+        plot(endCoords(sel,3),endCoords(sel,4),'color',colors{iClust},'marker','.')
+        hold on
+    end
+    hold off
+    axis([-300 300 -300 300])
+    axis square 
+    box off
+end
+
+subplot(3,2,[5 6])
+bar(vector)
+nClust=find(vector<5,1,'first');
+mapping=kmeans(endCoords(:,3:4),nClust);
+if nClust==2
+    if mapping(1)==nClust
+        mapping=nClust+1-mapping;
+    end
+end
+
+PF_allocation=NaN(nTracks,1);
+PF_allocation(failure_trials==0)=mapping;
+
+PF_matrix=[demographics PF_allocation(:)];
+
+nFolders=length(unique(PF_matrix(:,3)));
+
+for iFolder=1:nFolders
+    sel=PF_matrix(:,3)==iFolder;
+    PF_matrix(sel,6)=fillTheGaps2(PF_matrix(sel,6));
+end
+
+%M=AllTracks.data;
+% lastRows=[unique(M(:,2)) pivotTable(M,2,'max',3)];
+% endCoordsSelection=lastRows(:,2)<500;
+% lastRows=lastRows(endCoordsSelection,:);
+% 
+% endCoords=zeros(size(lastRows,1),2);
+% t0=clock;
+% for index=1:size(lastRows,1)
+%     progress(index,size(lastRows,1),t0)
+%     endCoords(index,:)=M(M(:,2)==lastRows(index,1)&M(:,3)==lastRows(index,2),5:6);
+% end
 
 %% Calculate population preference for each quadrant
 sel=between(AllTracks.data(:,4),[0 32]+4*0);
