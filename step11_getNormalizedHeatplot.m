@@ -38,9 +38,9 @@ Y_min=min(allTracks(:,3));
 min_value=min([X_min Y_min])-10;
 
 %use_sorting='days';
-use_sorting='batch-days';
+use_sorting='folders';
 switch use_sorting
-    case 'groups'
+    case 'folders'
         groupAllocation_vector=TrialAllocation.data(:,1);
     case 'days'
         groupAllocation_vector=TrialAllocation.data(:,4);
@@ -94,6 +94,8 @@ for interval=1:nIntervals
             case 'days'
                 groupName=sprintf('Day%02d',iGroup);                
             case 'batch-days'
+                groupName=folder_list{group_nr}
+            case 'folders'
                 groupName=folder_list{group_nr}
         end
         

@@ -3,7 +3,7 @@ clear all
 
 header_script_MWM
 
-plotIt=0;
+plotIt=1;
 %saveIt=0;
 
 loadName=fullfile('dataSets',databaseName);
@@ -15,7 +15,7 @@ X=M(:,2);
 Y=M(:,3);
 
 %%% find center of points
-switch 1
+switch 2
     case 1
         centerX=mean([min(X) max(X)]);
         centerY=mean([min(Y) max(Y)]);
@@ -32,7 +32,7 @@ poolCoords.imSize=[154 207];
 
 %% calculate optimal radius of pool in pixels
 [angles dist_vector]=cart2pol(X-centerX,Y-centerY);
-switch 2
+switch 1
     case 1
         %radius=max(abs(dist_vector));
         radius=prctile(abs(dist_vector),99.6);
@@ -128,6 +128,7 @@ end
 
 %%
 if plotIt==1
+    %%
     %N=20;
     N=length(X);
     %N=257;
@@ -138,12 +139,14 @@ if plotIt==1
     plot(poolCoords.center(1),poolCoords.center(2),'m*','markerSize',10)
     circle(poolCoords.center,poolCoords.radius,1000,'k-',3);
     
-    for index=1:length(annulusRadii)
-        circle(poolCoords.center,annulusRadii(index),1000,'r:',2);
+    for index=1:length(poolCoords.annulusRadii)
+        circle(poolCoords.center,poolCoords.annulusRadii(index),1000,'r:',2);
     end
-    plot(endCoords(:,1),endCoords(:,2),'co')
-    circle(platFormCoords.current,platFormCoords.radius,1000,'k-',3);
-    circle(platFormCoords.current,platFormCoords.radius*2.5,1000,'r-',3);
+    plot(endCoords(:,3),endCoords(:,4),'co')
+    for iPF=1:length(platFormCoords.coords)
+        circle(platFormCoords.coords(iPF).center,platFormCoords.coords(iPF).radius,1000,'k-',3);
+        circle(platFormCoords.coords(iPF).center,platFormCoords.coords(iPF).radius*2.5,1000,'r-',3);
+    end
     if isfield(platFormCoords,'previous')
         circle(platFormCoords.previous,platFormCoords.radius,1000,'k--',3);
         circle(platFormCoords.previous,platFormCoords.radius*2.5,1000,'r--',3);
@@ -163,6 +166,7 @@ if plotIt==1
     %axis([0 207 0 154])
     axis([centerX-100 centerX+100 centerY-100 centerY+100])
     axis ij
+    axis equal
     box off
 end
 
