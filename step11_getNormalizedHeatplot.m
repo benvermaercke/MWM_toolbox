@@ -9,7 +9,7 @@ kernelSize=30; % was 35
 nPerm=2; % Determines number of random distributions to base population on (usually 10)
 rescaleFactor=2; % improves the resolution of the resulting eps image
 
-nTotal=3001; 
+nTotal=3001;
 window_type=1;
 
 
@@ -35,7 +35,7 @@ allTracks=cat(1,AllTracks.data);
 X_min=min(allTracks(:,2));
 Y_min=min(allTracks(:,3));
 
-min_value=min([X_min Y_min])-10;
+min_value=[6 4];%min([X_min Y_min])-10;
 
 %use_sorting='days';
 use_sorting='folders';
@@ -77,8 +77,12 @@ nWindows=floor((nTotal-nOverlap)/offset);
 timePoints=[(((1:nWindows)-1)*offset+1)' (((1:nWindows)-1)*offset+windowSize)'];
 nIntervals=size(timePoints,1);
 
-mask=drawCircle(poolCoords.radius*rescaleFactor,(poolCoords.center-min_value)*rescaleFactor,poolCoords.imSize*rescaleFactor);
-
+%mask=drawCircle2(poolCoords.radius*rescaleFactor,(poolCoords.center-min_value)*rescaleFactor,poolCoords.imSize*rescaleFactor);
+% mask=drawCircle2(poolCoords.radius*rescaleFactor,(poolCoords.center-min_value)*rescaleFactor,poolCoords.imSize*rescaleFactor);
+% mask=rot90(mask);
+% imshow(mask)
+%%
+figure
 clf
 for interval=1:nIntervals
     timeInterval=timePoints(interval,:);
@@ -90,9 +94,9 @@ for interval=1:nIntervals
         switch use_sorting
             case 'groups'
                 groupName=folder_list{iGroup};
-                groupName(groupName=='_')=' ';                
+                groupName(groupName=='_')=' ';
             case 'days'
-                groupName=sprintf('Day%02d',iGroup);                
+                groupName=sprintf('Day%02d',iGroup);
             case 'batch-days'
                 groupName=folder_list{group_nr}
             case 'folders'
@@ -100,26 +104,27 @@ for interval=1:nIntervals
         end
         
         selectedTracks=find(ismember(groupAllocation_vector,group_nr));
-                
+        
         %saveName=['output\' databaseName '\' databaseName '_' groupName '_T_' padZeros(timeInterval(1),3) '-' padZeros(timeInterval(2),3) '.png'];
         saveName=fullfile('output',databaseName,[databaseName '_' groupName '_T_' padZeros(timeInterval(1),3) '-' padZeros(timeInterval(2),3) '.png']);
         if saveIt==0 || ~exist(saveName,'file')
-                       
+            
             if max(allTracks(:,3))>nTotal
                 sprintf('Maximum trial duration (%3.2f) > nTotal (%3.2f).',[max(allTracks(:,3)) nTotal])
-                warning('Not using all available data, check value of nTotal')                                
+                warning('Not using all available data, check value of nTotal')
             end
             
             allTracks=cat(1,AllTracks(selectedTracks).data);
             tracks=allTracks(between(allTracks(:,1),timeInterval),:);
-            tracks(:,2:3)=tracks(:,2:3)-min_value;
+            tracks(:,2:3)=tracks(:,2:3);%-min_value;
             
             %%% Get real data
-            HP_actual=makeHeatplot(tracks(:,2:3),kernelSize,poolCoords.imSize,[0 0]);
+            %HP_actual=makeHeatplot(tracks(:,2:3),kernelSize,poolCoords.imSize,[0 0]);
+            HP_actual=makeHeatplot(tracks(:,2:3),kernelSize,size(poolCoords.mask),[1 0]);
             %imagesc(HP_actual)
             %axis equal
             
-            %%% Get random data            
+            %%% Get random data
             perm_matrix=zeros(nPerm,3);
             t0=clock;
             for iPerm=1:nPerm
@@ -135,7 +140,7 @@ for interval=1:nIntervals
                 HP_random=makeHeatplot(tracks_random,kernelSize,poolCoords.imSize,[1 0]);
                 perm_matrix(iPerm,:)=[iPerm mean(HP_random(:)) std(HP_random(:))];
                 %imagesc(HP_random)
-                %axis equal                
+                %axis equal
                 progress(iPerm,nPerm,t0)
             end
             
@@ -143,14 +148,14 @@ for interval=1:nIntervals
             SIGMA=mean(perm_matrix(:,3));
             
             heatplot_norm=(HP_actual-MU)/SIGMA;
-                        
+            
             A=heatplot_norm;
             Ymin=min(A(:));
             
             if saveIt==0
                 %%
                 subplot(nRows,nCols,iGroup)
-                %subplot(nIntervals,nRows,(interval-1)*nGroups+groupNr)                
+                %subplot(nIntervals,nRows,(interval-1)*nGroups+groupNr)
                 %Ymax=max(A(:));
                 Ymax=5;
                 Yrange=[-2 Ymax];
@@ -173,26 +178,31 @@ for interval=1:nIntervals
             HP=imresize(A,rescaleFactor);
             im=imshow(HP,Yrange);
             hold on
-            circle((poolCoords.center-min_value)*rescaleFactor,poolCoords.radius*rescaleFactor+1,1000,'k-',lineWidth);
-            plot((poolCoords.center([1 1])-min_value)*rescaleFactor,((poolCoords.center([2 2])-min_value)+[-poolCoords.radius poolCoords.radius])*rescaleFactor,'k-','lineWidth',lineWidth);
-            plot(((poolCoords.center([1 1])-min_value)+[-poolCoords.radius poolCoords.radius])*rescaleFactor,(poolCoords.center([2 2])-min_value)*rescaleFactor,'k-','lineWidth',lineWidth);
+            circle((poolCoords.center-min_value)*rescaleFactor,poolCoords.radius*rescaleFactor+3,1000,'k-',lineWidth*3);
+            plot((poolCoords.center([1 1])-min_value(1))*rescaleFactor,((poolCoords.center([2 2])-min_value(2))+[-poolCoords.radius poolCoords.radius])*rescaleFactor,'k-','lineWidth',lineWidth);
+            plot(((poolCoords.center([1 1])-min_value(1))+[-poolCoords.radius poolCoords.radius])*rescaleFactor,(poolCoords.center([2 2])-min_value(2))*rescaleFactor,'k-','lineWidth',lineWidth);
             
-            circle((platForm_coords-min_value)*rescaleFactor,platForm_radius*rescaleFactor,1000,'k-',lineWidth);
-            if length(platFormCoords.coords)==2
-                circle((platFormCoords.coords(2).center-min_value)*rescaleFactor,platFormCoords.coords(2).radius*rescaleFactor,1000,'k--',lineWidth);
+            platform_position=mean(platFormCoords.PF_matrix(selectedTracks,6));
+            
+            if platform_position==1
+                circle((platForm_coords-min_value)*rescaleFactor,platForm_radius*rescaleFactor,1000,'k-',lineWidth);
+            elseif platform_position==2
+                circle((platForm_coords-min_value)*rescaleFactor,platForm_radius*rescaleFactor,1000,'k--',lineWidth); % show previous as broken line
+                circle((platFormCoords.coords(2).center-min_value)*rescaleFactor,platFormCoords.coords(2).radius*rescaleFactor,1000,'k-',lineWidth);
             end
             hold off
             
             colormap jet
             %colormap hot
-            set(im,'AlphaData',mask)
+            set(im,'AlphaData',imresize(poolCoords.mask,rescaleFactor))
             
             %%
-            imageHandles(iGroup)=im;                                    
+            imageHandles(iGroup)=im;
             
             if saveIt==1
                 savec(saveName)
                 print(gcf,'-dpng','-r300',saveName)
+                die
             else
                 set(gca,'ButtonDownFcn',{@switchFcn,get(gca,'position')})
                 %set(gca,'fontsize',6)

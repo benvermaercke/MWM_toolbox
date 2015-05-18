@@ -1,6 +1,9 @@
 clear all
 clc
 
+%%% Make a general preprocessing script fill gaps, makes coords positive,
+%%% resamples to 5Hz according to options
+
 header_script_MWM
 
 %saveIt=0;

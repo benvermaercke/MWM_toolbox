@@ -31,13 +31,14 @@ else
 end
 
 nSheets=xlsWorkbook.getNumberOfSheets();
-
-dataMatrix=struct;
 if nSheets==0
     disp('No sheets found...')
 else
     xlsSheet = xlsWorkbook.getSheetAt(nSheets-1);
     nRows=xlsSheet.getLastRowNum;
+    
+    %%% Pre allocate dataMatrix
+    dataMatrix=struct('data',zeros(nRows,nCols_req-1),'fieldNames','');
     data_counter=0;
     for iRow=0:nRows
         current_row=xlsSheet.getRow(iRow);
@@ -58,7 +59,8 @@ else
                     cell_type=current_cell.getCellType();
                     switch cell_type
                         case 0
-                            cell_content=str2double(current_cell.getRawValue());
+                            %cell_content=str2double(current_cell.getRawValue());
+                            cell_content=current_cell.getNumericCellValue();
                         case 1
                             cell_content=NaN;
                         otherwise
@@ -82,7 +84,7 @@ else
                     cell_type=current_cell.getCellType();
                     switch cell_type
                         case 0 % num
-                            value=str2double(current_cell.getRawValue());
+                            value=current_cell.getNumericCellValue();
                         case 1 % str
                             value=char(current_cell.getStringCellValue());
                         case 3 % empty
@@ -104,5 +106,7 @@ else
             case 3 % empty
         end
     end
+    %%% prune data matrix
+    dataMatrix.data(data_counter+1:end,:)=[];
 end
 

@@ -1,19 +1,27 @@
 clear all
 clc
 
-overwrite=0;
+header_script_MWM
 
-filename='01_TineV_Acq';
+saveIt=1;
 
-loadName=fullfile('datasets',filename);
-% loadName=fullfile('dataSets_17parameters',filename);
+try
+    loadName=fullfile('dataSets',databaseName);
+catch
+    loadName=fullfile('dataSets_17parameters',filename);
+end
 
-load(loadName,'AllTracks','MWMtype')
+load(loadName,'AllTracks','nTracks','MWMtype')
+
 if MWMtype==2
-    M=AllTracks.data;
-    re_alignment_values=[-min(M(:,5))+5 -min(M(:,6))+5];
-    M(:,5)=M(:,5)+re_alignment_values(1);
-    M(:,6)=M(:,6)+re_alignment_values(2);
+    M=cat(1,AllTracks.data);
+    re_alignment_values=[-min(M(:,2))+5 -min(M(:,3))+5];
+    for iTrack=1:nTracks
+        M=AllTracks(iTrack).data;
+        M(:,2)=M(:,2)+re_alignment_values(1);
+        M(:,3)=M(:,3)+re_alignment_values(2);
+        AllTracks(iTrack).data=M;        
+    end
 else
     M=AllTracks.data;
     SR=mean(1./diff(M(1:10,4)));
@@ -24,9 +32,14 @@ else
     else
     end
 end
-if overwrite==1
+
+%%% Sanity check
+M=cat(1,AllTracks.data);
+min(M)
+
+if saveIt==1
     %%
-    AllTracks.data=M;
+    %AllTracks.data=M;
     save(loadName,'AllTracks','re_alignment_values','-append')
     disp('AllTracks overwritten')
 end

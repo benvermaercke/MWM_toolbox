@@ -30,5 +30,7 @@ A=strsplit(data_folder,filesep);
 databaseName=A{end};
 databaseName(databaseName==' ')='_';
 
+im_size=[200 200];
+
 fprintf('Working from %s\n',data_folder)
 

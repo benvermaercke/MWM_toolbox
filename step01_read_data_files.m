@@ -3,9 +3,11 @@ clc
 
 header_script_MWM
 
+saveIt=0;
+
 %%% Create database file
 saveName=['dataSets/' databaseName '.mat'];
-if exist(saveName,'file')
+if saveIt==1&&exist(saveName,'file')
     error(['File ' saveName ' exists...'])
 else
     savec(saveName)
@@ -52,21 +54,29 @@ initXLSreader
 
 t0=clock;
 trackNames=cell(nFiles,1);
+dataMatrix_all=struct('data',[],'fieldNames','');
 trackInfo_all=struct('Start_time','','Video_file',[],'Tracking_source','','Duration','','Reference_time','','Trial_ID',[],'Arena_index',[],'Object_index',[],'Arena_settings','','Trial_name','','Arena_name','','Subject_name','','Track','','Trial_status','','Acquisition_status','','Track_status','','Recording_after','','Recording_duration','','Video_start_time',[],'Detection_settings','','Trial_control_settings','','Video_file_status','','Sync_status','','Reference_duration','','Sof_file',[],'mouse_ID','','trial',[],'Day',[],'treatment',[],'Lesion','','folderRoot','','folderName','','file_nr',[]);
 for iFile=1:nFiles
+    %%% Get track name
     track_name=S(iFile).name;
     trackNames{iFile}=track_name;
-    [dataMatrix, trackInfo]=readXLSdata(track_name,3);
+    
+    %%% Create folderName
     folderName=getFolderName(track_name);
     folderName=strrep(folderName,' ','_');
     
-    %%% Append to trackInfo
+    %%% Read data from file
+    [dataMatrix, trackInfo]=readXLSdata(track_name,3);    
+    
+    %%% Fix trackInfo which has to match over all files
     if isfield(trackInfo,'User_defined_1')
         trackInfo=rmfield(trackInfo,'User_defined_1');
     end
     if ~isfield(trackInfo,'Lesion')
         trackInfo.Lesion='';
     end
+    
+    %%% Build up trackInfo
     trackInfo.folderRoot=folderName(1:end-4);
     trackInfo.folderName=folderName;
     trackInfo.file_nr=iFile;
@@ -75,6 +85,9 @@ for iFile=1:nFiles
     dataMatrix_all(iFile)=dataMatrix;
     trackInfo_all(iFile)=trackInfo;
     progress(iFile,nFiles,t0)
+    %if mod(iFile,2)==1
+    %    fprintf('%c','.') 
+    %end
 end
 
 %% Post processing

@@ -21,10 +21,10 @@ if size(points,1)<size(points,2)
     points=points';
 end
 
-if nargin<4
-    options=[1 1];
-else
+if nargin>=4&&~isempty(varargin{4})
     options=varargin{4};
+else
+    options=[1 1];
 end
 
 points=round(points);
@@ -41,17 +41,18 @@ m=min(points(:,2));
 M=max(points(:,2));
 Xdim=m:M;
 
-if nargin<2
-    kernelSize=round(mean([length(Xdim) length(Ydim)])/5);
-else
+if nargin>=2&&~isempty(varargin{2})
     kernelSize=varargin{2};
+else    
+    kernelSize=round(mean([length(Xdim) length(Ydim)])/5);
 end
 
-if nargin<3
-    heatplot=zeros(length(Xdim),length(Ydim));
-else
+if nargin>=3&&~isempty(varargin{3})
     dimensions=varargin{3};
     heatplot=zeros(dimensions(1),dimensions(2));
+else
+    %heatplot=zeros(length(Xdim),length(Ydim));
+    heatplot=zeros(max(Xdim),max(Ydim));
 end
 
 

@@ -4,7 +4,7 @@ clear all
 header_script_MWM
 
 plotIt=1;
-%saveIt=0;
+saveIt=1;
 
 loadName=fullfile('dataSets',databaseName);
 % loadName=fullfile('dataSets_17parameters',filename);
@@ -15,24 +15,39 @@ X=M(:,2);
 Y=M(:,3);
 
 %%% find center of points
-switch 2
+switch 3
     case 1
         centerX=mean([min(X) max(X)]);
         centerY=mean([min(Y) max(Y)]);
     case 2
         centerX=mean([prctile(X,.4) prctile(X,99.6)]);
         centerY=mean([prctile(Y,.4) prctile(Y,99.6)]);
+    case 3
+        %%        
+        H=makeHeatplot([X Y],15,im_size,[1 0]);
+        TH=prctile(H(:),65);
+        H_TH=H>TH;
+        H_TH=imfill(H_TH,'holes');
+        imshow(H_TH,[])
+        H_shrink=imerode(H_TH,[0 1 0; 1 1 1;0 1 0]);
+        H_edge=H_TH-H_shrink;
+        [edge_X,edge_Y]=find(H_edge==1);
+        ellipse_t=fit_ellipse(edge_X,edge_Y);
+        centerX=ellipse_t.X0_in+min(X);
+        centerY=ellipse_t.Y0_in+min(Y);
 end
 poolCoords.center=[centerX centerY];
 poolCoords.top=[centerX min(Y)];
 poolCoords.bottom=[centerX max(Y)];
 poolCoords.left=[min(X) centerY];
 poolCoords.right=[max(X) centerY];
-poolCoords.imSize=[154 207];
+%poolCoords.imSize=[154 207];
+poolCoords.imSize=im_size;
+poolCoords.mask=H_TH;
 
 %% calculate optimal radius of pool in pixels
-[angles dist_vector]=cart2pol(X-centerX,Y-centerY);
-switch 1
+[angles, dist_vector]=cart2pol(X-centerX,Y-centerY);
+switch 3
     case 1
         %radius=max(abs(dist_vector));
         radius=prctile(abs(dist_vector),99.6);
@@ -40,6 +55,8 @@ switch 1
         radiusX=max(X)-centerX;
         radiusY=max(Y)-centerY;
         radius=max([radiusX radiusY]);
+    case 3
+        radius=mean([ellipse_t.long_axis ellipse_t.short_axis])/2;
 end
 poolCoords.radius=radius;
 
@@ -89,9 +106,38 @@ end
 platFormCoords=struct;
 for iClust=1:nClust
     sel=mapping==iClust;
-    platFormCoords.coords(iClust).center=median(endCoords(sel,3:4));
-    platFormCoords.coords(iClust).radius=mean([mean(endCoords(sel,3:4))-prctile(endCoords(sel,3:4),1) prctile(endCoords(sel,3:4),99)-mean(endCoords(sel,3:4))]);    
-    platFormCoords.coords(iClust).targetZoneRadius=platFormCoords.coords(iClust).radius*2.5;
+    switch 2
+        case 1
+            platFormCoords.coords(iClust).center=median(endCoords(sel,3:4));
+            platFormCoords.coords(iClust).radius=mean([mean(endCoords(sel,3:4))-prctile(endCoords(sel,3:4),1) prctile(endCoords(sel,3:4),99)-mean(endCoords(sel,3:4))]);
+            platFormCoords.coords(iClust).targetZoneRadius=platFormCoords.coords(iClust).radius*2.5;
+        case 2
+            %%            
+%             H=makeHeatplot(endCoords(sel,3:4),2);
+%             TH=prctile(H(:),10);
+%             H_TH=H>TH;
+%             
+%             H_shrink=imerode(H_TH,[0 1 0; 1 1 1;0 1 0]);
+%             H_edge=H_TH-H_shrink;
+%             [edge_X,edge_Y]=find(H_edge==1);
+%             ellipse_t=fit_ellipse(edge_X,edge_Y);
+%             platFormCoords.coords(iClust).center=[ellipse_t.X0_in+min(endCoords(sel,3)) ellipse_t.Y0_in+min(endCoords(sel,4))];
+            ellipse_t=fit_ellipse(endCoords(sel,3),endCoords(sel,4));
+            imshow(H_edge,[])
+            
+            platFormCoords.coords(iClust).center=[ellipse_t.X0_in ellipse_t.Y0_in];
+            platFormCoords.coords(iClust).radius=mean([ellipse_t.long_axis ellipse_t.short_axis])/2;
+            platFormCoords.coords(iClust).targetZoneRadius=platFormCoords.coords(iClust).radius*2.5;
+        case 3 % bivariate normal fit
+            %%
+            M=endCoords(:,3:4);
+            tic
+            F=fitgmdist(M,2);
+            platFormCoords.coords(iClust).center=F.mu(iClust,:);
+            platFormCoords.coords(iClust).radius=F.Sigma(1,1,iClust)/2;
+            platFormCoords.coords(iClust).targetZoneRadius=platFormCoords.coords(iClust).radius*2.5;
+            toc
+    end
 end
 
 %% Assign a platform location to each track, on a by folder basis. Using the known end positions of successful tracks
