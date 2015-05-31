@@ -32,7 +32,7 @@ saveIt=1;
 MWMtype=3; % 1: old | 2: new | 3: open field
 data_cols=[3 4]; % data_cols=[2 3];
 border_size=[5 5];
-im_size=[200 200];
+%im_size=[200 200];
 
 fprintf('Working from %s\n',data_folder)
 
