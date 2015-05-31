@@ -1,6 +1,4 @@
-saveIt=1;
-MWMtype=2; % 1: old | 2: new |
-
+%%% General information common to all scripts goes here
 path_dir=fileparts(mfilename('fullpath'));
 addpath(genpath(path_dir))
 
@@ -30,6 +28,8 @@ A=strsplit(data_folder,filesep);
 databaseName=A{end};
 databaseName(databaseName==' ')='_';
 
+saveIt=1;
+MWMtype=3; % 1: old | 2: new | 3: open field
 data_cols=[3 4]; % data_cols=[2 3];
 im_size=[200 200];
 
