@@ -6,7 +6,7 @@ clc
 
 header_script_MWM
 
-saveIt=0;
+%saveIt=0;
 
 try
     loadName=fullfile('dataSets',databaseName);
