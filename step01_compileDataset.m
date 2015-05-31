@@ -17,7 +17,7 @@ clear all
 clc
 
 saveIt=1;
-MWMtype=2; % 1: old | 2: new |
+MWMtype=3; % 1: old | 2: new |
 
 data_root='/Users/benvermaercke/Dropbox (Personal)';
 
@@ -33,7 +33,7 @@ if ~exist('data_folder','var')
     cd(curr_dir)
 end
 
-A=strsplit(filesep,data_folder);
+A=strsplit(data_folder,filesep);
 databaseName=A{end};
 databaseName(databaseName==' ')='_';
 saveName=['dataSets/' databaseName '.mat'];
@@ -50,6 +50,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 S=rdir([data_folder filesep '**' filesep '**.csv']);
 fileType=1;
+if isempty(S)
+    S=rdir([data_folder filesep '**' filesep '**.xlsx']);
+    fileType=2;
+end
 if isempty(S)
     S=rdir([data_folder filesep '**' filesep '**.xls']);
     fileType=2;
@@ -92,9 +96,12 @@ disp([num2str(nFiles) ' files found!'])
 folder_names=cell(length(S),1);
 for iFile=1:length(S)
     [f,fn,ext]=fileparts(S(iFile).name);
-    parts=strsplit(filesep,f);
+    parts=strsplit(f,filesep);
     folder_name=parts{end};
     switch length(strfind(folder_name,' '))
+        case 0
+            str=folder_name;
+            num=1;
         case 1
             str=char(sscanf(folder_name,'%s D%*d'))';
             num=sscanf(folder_name,'%*s D%d');
@@ -115,7 +122,7 @@ AllTracks.fieldNames={'folderNr','trackNr','sampleNr','time','X-pos','Y-pos'};
 AllTracks.data=[];
 count=1;
 t0=clock;
-for i=1:nFiles
+for index=1:nFiles
     progress(index,nFiles,t0,count)
     filename=S(index).name;
     
