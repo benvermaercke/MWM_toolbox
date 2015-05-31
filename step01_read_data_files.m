@@ -70,8 +70,19 @@ for iFile=1:nFiles
     trackNames{iFile}=track_name;
     
     %%% Create folderName
-    folderName=getFolderName(track_name);
-    folderName=strrep(folderName,' ','_');
+    switch 2
+        case 1
+            folderName=getFolderName(track_name);
+            folderName=strrep(folderName,' ','_');
+            folderRoot=folderName(1:end-4);
+        case 2 % find all folders separating this folder from data folder
+            %%
+            parts2=strsplit(data_folder,filesep);
+            parts1=strsplit(track_name,filesep);
+            parts=parts1(length(parts2)+1:end-1);
+            folderName=strrep(strjoin(parts,'_'),' ','_');            
+            folderRoot=folderName(1:end-3);
+    end
     
     %%% Read data from file
     [dataMatrix_sheets, trackInfo_sheets]=readXLSdata(track_name,4);
@@ -95,38 +106,54 @@ for iFile=1:nFiles
         
         %%% Build up trackInfo
         file_counter=file_counter+1;
-        trackInfo.folderRoot=folderName(1:end-4);
+        trackInfo.folderRoot=folderRoot;
         trackInfo.folderName=folderName;
         trackInfo.file_nr=file_counter;
         
         %%% join data
         dataMatrix_all(file_counter)=dataMatrix;
-        trackInfo_all(file_counter)=trackInfo;
-        progress(iFile,nFiles,t0)
+        trackInfo_all(file_counter)=trackInfo;        
     end
+    progress(iFile,nFiles,t0)
 end
 
 %% Post processing
-group_mapping=getMapping({trackInfo_all.folderRoot});
-folder_mapping=getMapping({trackInfo_all.folderName});
+no_mapping=zeros(length(trackInfo_all),1);
+
+[group_mapping,groups]=getMapping({trackInfo_all.folderRoot});
+[folder_mapping,labels]=getMapping({trackInfo_all.folderName});
+
 if isfield(trackInfo_all,'Day')
     day_mapping=cat(1,trackInfo_all.Day);
 else
-    day_mapping=zeros(length(trackInfo_all),1);
+    day_mapping=no_mapping;
 end
+
 if isfield(trackInfo_all,'mouse_ID')
     ID_mapping=getMapping({trackInfo_all.mouse_ID});
 elseif isfield(trackInfo_all,'Animal_ID')
     %ID_mapping=getMapping({trackInfo_all.Animal_ID});
     ID_mapping=cat(1,trackInfo_all.Animal_ID);
+else
+    ID_mapping=no_mapping;
 end
+
 if isfield(trackInfo_all,'trial')
     trial_mapping=cat(1,trackInfo_all.trial);
 elseif isfield(trackInfo_all,'Trial_ID')
     trial_mapping=cat(1,trackInfo_all.Trial_ID);
+else
+    trial_mapping=no_mapping;
 end
 
-demographics=[folder_mapping group_mapping day_mapping ID_mapping trial_mapping];
+if isfield(trackInfo_all,'Arena_ID')
+    arena_mapping=cat(1,trackInfo_all.Arena_ID);
+else
+    arena_mapping=no_mapping;
+end
+
+
+demographics=[folder_mapping group_mapping day_mapping ID_mapping trial_mapping arena_mapping];
 TrackInfo=trackInfo_all;
 AllTracks=dataMatrix_all;
 
