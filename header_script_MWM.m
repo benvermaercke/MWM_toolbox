@@ -9,12 +9,12 @@ if ispc
 else
     if ismac
         data_root='/Users/benvermaercke/Dropbox (Personal)';
-        data_folder=fullfile(data_root,'Disconnection SearchStrategies');
+        data_folder=fullfile(data_root,'heatplots tau58');
     else % server
         [~, user_name] = system('whoami');user_name=user_name(1:end-1);
         %root_folder=fullfile('/home/',user_name,'/MWM_toolbox/'); % temp location
         root_folder=fullfile('/home/',user_name,'/Dropbox (coxlab)/'); % temp location
-        data_folder=fullfile(root_folder,'Disconnection SearchStrategies');
+        data_folder=fullfile(root_folder,'heatplots tau58');
     end
 end
 
@@ -30,6 +30,7 @@ A=strsplit(data_folder,filesep);
 databaseName=A{end};
 databaseName(databaseName==' ')='_';
 
+data_cols=[3 4]; % data_cols=[2 3];
 im_size=[200 200];
 
 fprintf('Working from %s\n',data_folder)
