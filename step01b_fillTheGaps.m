@@ -6,7 +6,9 @@ clc
 
 header_script_MWM
 
-%saveIt=0;
+saveIt=0;
+
+
 
 try
     loadName=fullfile('dataSets',databaseName);
@@ -24,8 +26,8 @@ for iTrack=1:nTracks
     M=AllTracks(iTrack).data;
     if any(isnan(M(:)))
         tic
-        M(:,2)=fillTheGaps2(M(:,2));
-        M(:,3)=fillTheGaps2(M(:,3));
+        M(:,data_cols(1))=fillTheGaps2(M(:,data_cols(1)));
+        M(:,data_cols(2))=fillTheGaps2(M(:,data_cols(2)));
         toc
         count=count+1;
     end

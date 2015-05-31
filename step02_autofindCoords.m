@@ -4,15 +4,15 @@ clear all
 header_script_MWM
 
 plotIt=1;
-saveIt=1;
+saveIt=0;
 
 loadName=fullfile('dataSets',databaseName);
 % loadName=fullfile('dataSets_17parameters',filename);
 load(loadName,'AllTracks','nTracks','demographics')
 
 M=cat(1,AllTracks.data);
-X=M(:,2);
-Y=M(:,3);
+X=M(:,data_cols(1));
+Y=M(:,data_cols(2));
 
 %%% find center of points
 switch 3
