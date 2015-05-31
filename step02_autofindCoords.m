@@ -10,12 +10,18 @@ loadName=fullfile('dataSets',databaseName);
 % loadName=fullfile('dataSets_17parameters',filename);
 load(loadName,'AllTracks','nTracks','demographics')
 
+
+arena_IDs=demographics(:,6);
+arena_ID_vector=unique(arena_ID_vector)
+nArena=length(arena_ID_vector);
+arena_selector=1:nArena
+
 M=cat(1,AllTracks.data);
 X=M(:,data_cols(1));
 Y=M(:,data_cols(2));
 
 %%% find center of points
-switch 3
+switch 4
     case 1
         centerX=mean([min(X) max(X)]);
         centerY=mean([min(Y) max(Y)]);
@@ -35,6 +41,18 @@ switch 3
         ellipse_t=fit_ellipse(edge_X,edge_Y);
         centerX=ellipse_t.X0_in+min(X);
         centerY=ellipse_t.Y0_in+min(Y);
+    case 4
+        H=makeHeatplot([X Y],15,im_size,[1 0]);
+        TH=prctile(H(:),65);
+        H_TH=H>TH;
+        H_TH=imfill(H_TH,'holes');
+                
+        centerX=mean([prctile(X,.4) prctile(X,99.6)]);
+        centerY=mean([prctile(Y,.4) prctile(Y,99.6)]);
+        imshow(H_TH,[])
+        hold on
+        plot(centerX,centerY,'m*')
+        hold off
 end
 poolCoords.center=[centerX centerY];
 poolCoords.top=[centerX min(Y)];
@@ -215,4 +233,5 @@ if plotIt==1
     axis equal
     box off
 end
+
 
