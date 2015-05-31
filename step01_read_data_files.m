@@ -3,7 +3,7 @@ clc
 
 header_script_MWM
 
-saveIt=0;
+saveIt=1;
 
 %%% Create database file
 saveName=['dataSets/' databaseName '.mat'];
@@ -14,15 +14,22 @@ else
 end
 
 %%% Find files
-S=rdir([data_folder filesep '**' filesep '**.csv']);
-fileType=1;
+S=[];
+if isempty(S)
+    S=rdir([data_folder filesep '**' filesep '**.xlsx']);
+    fileType=1;
+end
 if isempty(S)
     S=rdir([data_folder filesep '**' filesep '**.xls']);
     fileType=2;
 end
 if isempty(S) % look for txt files
-    S=rdir([data_folder filesep '**' filesep '**.txt']);
+    S=rdir([data_folder filesep '**' filesep '**.csv']);
     fileType=3;
+end
+if isempty(S) % look for txt files
+    S=rdir([data_folder filesep '**' filesep '**.txt']);
+    fileType=4;
 end
 if isempty(S)
     error(['No files found in folder: ' data_folder])
@@ -55,7 +62,8 @@ initXLSreader
 t0=clock;
 trackNames=cell(nFiles,1);
 dataMatrix_all=struct('data',[],'fieldNames','');
-trackInfo_all=struct('Start_time','','Video_file',[],'Tracking_source','','Duration','','Reference_time','','Trial_ID',[],'Arena_index',[],'Object_index',[],'Arena_settings','','Trial_name','','Arena_name','','Subject_name','','Track','','Trial_status','','Acquisition_status','','Track_status','','Recording_after','','Recording_duration','','Video_start_time',[],'Detection_settings','','Trial_control_settings','','Video_file_status','','Sync_status','','Reference_duration','','Sof_file',[],'mouse_ID','','trial',[],'Day',[],'treatment',[],'Lesion','','folderRoot','','folderName','','file_nr',[]);
+%trackInfo_all=struct('Start_time','','Video_file',[],'Tracking_source','','Duration','','Reference_time','','Trial_ID',[],'Arena_index',[],'Object_index',[],'Arena_settings','','Trial_name','','Arena_name','','Subject_name','','Track','','Trial_status','','Acquisition_status','','Track_status','','Recording_after','','Recording_duration','','Video_start_time',[],'Detection_settings','','Trial_control_settings','','Video_file_status','','Sync_status','','Reference_duration','','Sof_file',[],'mouse_ID','','trial',[],'Day',[],'treatment',[],'Lesion','','folderRoot','','folderName','','file_nr',[]);
+file_counter=0;
 for iFile=1:nFiles
     %%% Get track name
     track_name=S(iFile).name;
@@ -66,36 +74,57 @@ for iFile=1:nFiles
     folderName=strrep(folderName,' ','_');
     
     %%% Read data from file
-    [dataMatrix, trackInfo]=readXLSdata(track_name,3);    
+    [dataMatrix_sheets, trackInfo_sheets]=readXLSdata(track_name,4);
     
-    %%% Fix trackInfo which has to match over all files
-    if isfield(trackInfo,'User_defined_1')
-        trackInfo=rmfield(trackInfo,'User_defined_1');
+    for iSheet=1:length(dataMatrix_sheets) 
+        dataMatrix=dataMatrix_sheets(iSheet);
+        trackInfo=trackInfo_sheets(iSheet);
+        
+        % Check for empty data
+        if ~any(dataMatrix.data(1,:))
+            die
+        end
+        
+        %%% Fix trackInfo which has to match over all files
+        %if isfield(trackInfo,'User_defined_1')
+            %trackInfo=rmfield(trackInfo,'User_defined_1');
+        %end
+        %if ~isfield(trackInfo,'Lesion')
+            %trackInfo.Lesion='';
+        %end
+        
+        %%% Build up trackInfo
+        file_counter=file_counter+1;
+        trackInfo.folderRoot=folderName(1:end-4);
+        trackInfo.folderName=folderName;
+        trackInfo.file_nr=file_counter;
+        
+        %%% join data
+        dataMatrix_all(file_counter)=dataMatrix;
+        trackInfo_all(file_counter)=trackInfo;
+        progress(iFile,nFiles,t0)
     end
-    if ~isfield(trackInfo,'Lesion')
-        trackInfo.Lesion='';
-    end
-    
-    %%% Build up trackInfo
-    trackInfo.folderRoot=folderName(1:end-4);
-    trackInfo.folderName=folderName;
-    trackInfo.file_nr=iFile;
-    
-    %%% join data
-    dataMatrix_all(iFile)=dataMatrix;
-    trackInfo_all(iFile)=trackInfo;
-    progress(iFile,nFiles,t0)
-    %if mod(iFile,2)==1
-    %    fprintf('%c','.') 
-    %end
 end
 
 %% Post processing
 group_mapping=getMapping({trackInfo_all.folderRoot});
 folder_mapping=getMapping({trackInfo_all.folderName});
-day_mapping=cat(1,trackInfo_all.Day);
-ID_mapping=getMapping({trackInfo_all.mouse_ID});
-trial_mapping=cat(1,trackInfo_all.trial);
+if isfield(trackInfo_all,'Day')
+    day_mapping=cat(1,trackInfo_all.Day);
+else
+    day_mapping=zeros(length(trackInfo_all),1);
+end
+if isfield(trackInfo_all,'mouse_ID')
+    ID_mapping=getMapping({trackInfo_all.mouse_ID});
+elseif isfield(trackInfo_all,'Animal_ID')
+    %ID_mapping=getMapping({trackInfo_all.Animal_ID});
+    ID_mapping=cat(1,trackInfo_all.Animal_ID);
+end
+if isfield(trackInfo_all,'trial')
+    trial_mapping=cat(1,trackInfo_all.trial);
+elseif isfield(trackInfo_all,'Trial_ID')
+    trial_mapping=cat(1,trackInfo_all.Trial_ID);
+end
 
 demographics=[folder_mapping group_mapping day_mapping ID_mapping trial_mapping];
 TrackInfo=trackInfo_all;
@@ -103,6 +132,7 @@ AllTracks=dataMatrix_all;
 
 %%
 if saveIt==1
+    %%
     nTracks=length(TrackInfo);
     trackClassification_vector=zeros(nTracks,1);
     save(saveName,'nTracks','demographics','trackNames','AllTracks','TrackInfo','trackClassification_vector','MWMtype')
