@@ -4,7 +4,7 @@ clc
 header_script_MWM
 
 plotIt=1;
-saveIt=1;
+saveIt=0;
 kernelSize=30; % was 35
 nPerm=2; % Determines number of random distributions to base population on (usually 10)
 rescaleFactor=2; % improves the resolution of the resulting eps image
@@ -32,8 +32,8 @@ loadName=fullfile('dataSets',databaseName);
 load(loadName)
 allTracks=cat(1,AllTracks.data);
 
-X_min=min(allTracks(:,2));
-Y_min=min(allTracks(:,3));
+X_min=min(allTracks(:,data_cols(1)));
+Y_min=min(allTracks(:,data_cols(2)));
 
 min_value=[6 4];%min([X_min Y_min])-10;
 
