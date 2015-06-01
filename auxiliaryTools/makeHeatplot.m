@@ -29,13 +29,13 @@ end
 
 points=round(points);
 if options(1)==1
-    points(:,1)=points(:,1)-min(points(:,1))+1;
+    points(:,1)=points(:,1)-min(points(:,1))+20;
 end
 m=min(points(:,1));
 M=max(points(:,1));
 Ydim=m:M;
 if options(1)==1
-    points(:,2)=points(:,2)-min(points(:,2))+1;
+    points(:,2)=points(:,2)-min(points(:,2))+20;
 end
 m=min(points(:,2));
 M=max(points(:,2));
