@@ -19,29 +19,47 @@ arena_ID_vector=unique(arena_IDs);
 nArena=length(arena_ID_vector);
 arenaCoords=struct;
 
-%%% Do correction per arena
-for arena_selector=1:nArena
-    sel=arena_IDs==arena_ID_vector(arena_selector);
+M=cat(1,AllTracks(1).data);
+sampling_rate=mean(1./diff(M(1:10,2)));
+
+correction_method=3;
+
+switch correction_method
+    case 0 % Do nothing
+    case 1 % Do correction per arena
+        for arena_selector=1:nArena
+            sel=arena_IDs==arena_ID_vector(arena_selector);
+            
+            % Find general properties: range of coords
+            M=cat(1,AllTracks(sel).data);
+            re_alignment_values=[-min(M(:,data_cols(1)))+border_size(1) -min(M(:,data_cols(2)))+border_size(2)];
+            
+            % Only apply to selected tracks
+            track_nr_vector=find(sel);
+            nTracks=length(track_nr_vector);
+            for iTrack=1:nTracks
+                track_nr=track_nr_vector(iTrack);
+                M=AllTracks(track_nr).data;
+                M(:,data_cols(1))=M(:,data_cols(1))+re_alignment_values(1);
+                M(:,data_cols(2))=M(:,data_cols(2))+re_alignment_values(2);
+                AllTracks(track_nr).data=M;
+            end
+        end
         
-    % Find general properties: range of coords
-    M=cat(1,AllTracks(sel).data);
-    sampling_rate=mean(1./diff(M(1:10,2)));
-    re_alignment_values=[-min(M(:,data_cols(1)))+border_size(1) -min(M(:,data_cols(2)))+border_size(2)];
-    
-    % Only apply to selected tracks
-    track_nr_vector=find(sel);
-    nTracks=length(track_nr_vector);
-    for iTrack=1:nTracks
-        track_nr=track_nr_vector(iTrack);
-        M=AllTracks(track_nr).data;
-        M(:,data_cols(1))=M(:,data_cols(1))+re_alignment_values(1);
-        M(:,data_cols(2))=M(:,data_cols(2))+re_alignment_values(2);
-        AllTracks(track_nr).data=M;
-    end
+    case 2 % Do correction per folder
+    case 3 % Do correction per track (risky! in case animal does not enter the origin)
+        re_alignment_values=[5 5];
+        nTracks=length(AllTracks);
+        for iTrack=1:nTracks
+            track=AllTracks(iTrack).data;
+            track_corrected=track;
+            track_corrected(:,data_cols)=[track(:,data_cols(1))-min(track(:,data_cols(1)))+re_alignment_values(1) track(:,data_cols(2))-min(track(:,data_cols(2)))+re_alignment_values(2)];
+            AllTracks(iTrack).data_corrected=track_corrected;
+        end
 end
 
 %%% Sanity check
-M=cat(1,AllTracks.data);
+M=cat(1,AllTracks.data_corrected);
 min(M)
 
 if saveIt==1
