@@ -50,19 +50,38 @@ for step=1:nStep
     [TH, R]=cart2pol(curPos(1)+xShift-poolCoords.center(1),curPos(2)+yShift-poolCoords.center(2));
         
     tic
-    while R>poolCoords.radius % choose random angle from [-pi/4 pi/4] range when wall is hit
-        angle_change=rand*pi/2-pi/4;
-        %angle_change=randn*pi/4;        
-        curAngle=curAngle+angle_change;
-        [xShift, yShift]=pol2cart(curAngle,curStep);        
-        [TH, R]=cart2pol(curPos(1)+xShift-poolCoords.center(1),curPos(2)+yShift-poolCoords.center(2));        
-        %disp([curStep curAngle TH R])
-        if toc>.2
-            %die
-            curStep=curStep+.01;
-        elseif toc>2
-            die
+    %replace by inpolygon implementation
+    if isfield(poolCoords,'radius')
+        while R>poolCoords.radius % choose random angle from [-pi/4 pi/4] range when wall is hit
+            angle_change=rand*pi/2-pi/4;
+            %angle_change=randn*pi/4;
+            curAngle=curAngle+angle_change;
+            [xShift, yShift]=pol2cart(curAngle,curStep);
+            [TH, R]=cart2pol(curPos(1)+xShift-poolCoords.center(1),curPos(2)+yShift-poolCoords.center(2));
+            %disp([curStep curAngle TH R])
+            if toc>.2
+                %die
+                curStep=curStep+.01;
+            elseif toc>2
+                die
+            end
         end
+    elseif isfield(poolCoords,'poly_rect')
+        while ~inpolygon(curPos(1)+xShift,curPos(2)+yShift,poolCoords.poly_rect(1,:),poolCoords.poly_rect(2,:))
+            angle_change=rand*pi/2-pi/4;
+            curAngle=curAngle+angle_change;
+            [xShift, yShift]=pol2cart(curAngle,curStep);
+            
+            if toc>.2
+                %die
+                disp('changing step size')
+                curStep=curStep+.01;
+            elseif toc>2
+                die
+            end
+        end
+    else
+        die
     end
     curPos=curPos+[xShift yShift];
     dataMatrix(step,:)=[step curPos curStep step_change curAngle angle_change];
