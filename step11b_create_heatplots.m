@@ -46,7 +46,7 @@ for iFolder=1:nFolders
         
         %%% create real heatplot
         M=cat(1,AllTracks(sel).data_corrected);
-        HP_actual=makeHeatplot(M(:,data_cols)*rescaleFactor,kernelSize*rescaleFactor,arenaCoords(1).im_size*rescaleFactor,[1 0]);
+        HP_actual=makeHeatplot(M(:,data_cols)*rescaleFactor,kernelSize*rescaleFactor,arenaCoords(1).im_size*rescaleFactor,[0 0]);
         %%
         %%% create permutations to find MU and SIGMA
         MU_vector=zeros(nPerm,1);
