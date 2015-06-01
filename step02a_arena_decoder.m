@@ -4,7 +4,7 @@ clear all
 header_script_MWM
 
 plotIt=1;
-%saveIt=0;
+saveIt=0;
 
 loadName=fullfile('dataSets',databaseName);
 % loadName=fullfile('dataSets_17parameters',filename);
