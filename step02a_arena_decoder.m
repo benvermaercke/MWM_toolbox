@@ -33,6 +33,7 @@ for arena_selector=1:nArena
         arenaCoords(arena_selector).left=[min(X) centerY];
         arenaCoords(arena_selector).right=[max(X) centerY];
         arenaCoords(arena_selector).im_size=round([max(X)+border_size(1) max(Y)+border_size(2)]);
+        arenaCoords(arena_selector).poly_rect=[min(X) min(X) max(X) max(X) min(X); min(Y) max(Y) max(Y) min(Y) min(Y)];
         %arenaCoords(arena_selector).mask=H_TH;
         
     else
