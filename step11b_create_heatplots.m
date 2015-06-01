@@ -3,272 +3,159 @@ clc
 
 header_script_MWM
 
-plot_it=2;
+plot_it=1;
 saveIt=0;
-kernelSize=30; % was 35
-nPerm=2; % Determines number of random distributions to base population on (usually 10)
-rescaleFactor=2; % improves the resolution of the resulting eps image
+TH_it=1;
+TH=2.7;
+
+kernelSize=10; % was 35
+nPerm=0; % Determines number of random distributions to base population on (usually 10)
+rescaleFactor=6; % improves the resolution of the resulting eps image
 
 try
     loadName=fullfile('dataSets',databaseName);
 catch
     loadName=fullfile('dataSets_17parameters',filename);
 end
-load(loadName,'AllTracks','demographics','arenaCoords')
+load(loadName,'AllTracks','TrackInfo','demographics','arenaCoords')
 
 folders=demographics(:,1);
 folder_vector=unique(folders);
 nFolders=length(folder_vector);
 
+
+[folder_mapping,folder_names]=getMapping({TrackInfo.folderName});
 arena_mapping=demographics(:,6);
 
+if 0
+    %%
+    iFolder=10
+    folder_name=folder_names{iFolder};
+    sel=folders==folder_vector(iFolder);
+end
+
+
+%%
 for iFolder=1:nFolders
+    folder_name=folder_names{iFolder};
+    folder_name_disp=strrep(folder_name,'_',' ');
     sel=folders==folder_vector(iFolder);
     if sum(sel)>0
-        
-        arena_mapping_folder=arena_mapping(sel);
-        
-        %%% create real heatplot
-        M=cat(1,AllTracks(sel).data);
-        HP_actual=makeHeatplot(M(:,data_cols),kernelSize,arenaCoords.im_size,[1 0]);
-        if plot_it==2
-            imshow(HP_actual,[])
-            colormap hot
-        end
-        drawnow
-        %%% create permutations to find MU and SIGMA
         track_nr_vector=find(sel);
         nTracks=length(track_nr_vector);
         
-        tracks_random=[];
-        for iTrack=1:nTracks
-            track_nr=track_nr_vector(iTrack);
-            arena_nr=arena_mapping(track_nr);
-            track_data=AllTracks(track_nr).data(:,data_cols);
-            tracks_random=cat(1,tracks_random,randomizeTrack(track_data,arenaCoords(arena_nr)));
+        %%% create real heatplot
+        M=cat(1,AllTracks(sel).data_corrected);
+        HP_actual=makeHeatplot(M(:,data_cols)*rescaleFactor,kernelSize*rescaleFactor,arenaCoords(1).im_size*rescaleFactor,[0 0]);
+        %%
+        %%% create permutations to find MU and SIGMA
+        MU_vector=zeros(nPerm,1);
+        SIGMA_vector=ones(nPerm,1);
+        t0=clock;
+        for iPerm=1:nPerm
+            %%
+            tracks_random=[];
+            for iTrack=1:nTracks
+                track_nr=track_nr_vector(iTrack);
+                arena_nr=arena_mapping(track_nr);
+                track_data=AllTracks(track_nr).data(:,data_cols);
+                R_track=randomizeTrack(track_data,arenaCoords(arena_nr+1));
+                tracks_random=cat(1,tracks_random,R_track);
+                
+                if 0
+                    %%
+                    subplot(211)
+                    plot(track_data(:,1),track_data(:,2))
+                    axis([0 60 0 60])
+                    axis equal
+                    subplot(212)
+                    plot(R_track(:,1),R_track(:,2))
+                    axis([0 60 0 60])
+                    axis equal
+                end
+            end
+            HP_random=makeHeatplot(tracks_random,kernelSize,arenaCoords.im_size,[1 0]);
+            MU_vector(iPerm)=mean(HP_random(:));
+            SIGMA_vector(iPerm)=std(HP_random(:));
+            
+            progress(iPerm,nPerm,t0)
         end
-        HP_random=makeHeatplot(tracks_random,kernelSize,arenaCoords.im_size,[1 0]);
+        %%
+        if isempty(MU_vector)
+            MU=mean(HP_actual(:));
+            SIGMA=std(HP_actual(:));
+        else
+            MU=mean(MU_vector);
+            SIGMA=mean(SIGMA_vector);
+        end
+        heatplot_norm=(HP_actual-MU)/SIGMA;
+        
+        if 0
+            %%
+            subplot(211)
+            imshow(HP_actual,[-4 4]*1500)
+            
+            subplot(212)
+            imshow(HP_random,[-4 4]*1500)
+            colormap parula
+        end
+        
+        %%%
+        coords=[3 3 30 30]*rescaleFactor;
+        %coords=[0 0 20 20]*rescaleFactor;
+        line_width=5;
+        mask=drawRect((arenaCoords(1).im_size)*rescaleFactor,coords+[1 1 0 0]);
+        
+        heatplot_show=imresize(heatplot_norm,rescaleFactor);
+        if saveIt==0
+            nCols=round(sqrt(nFolders));
+            nRows=round(nFolders/nCols);
+            subplot(nRows,nCols,iFolder)
+        else
+            subplot(111)
+        end        
+        
+        if TH_it==1
+            im=imshow(heatplot_show>TH,[0 1]);
+        else
+            im=imshow(heatplot_show,[-1 1]*4);
+        end
+        
+        set(im,'AlphaData',imresize(mask,rescaleFactor,'nearest'))
+        hold on
+        
+        plot(coords([2 2])*rescaleFactor,coords([1 3])*rescaleFactor,'k-','lineWidth',line_width)
+        plot(coords([2 4])*rescaleFactor,coords([1 1])*rescaleFactor,'k-','lineWidth',line_width)
+        plot(coords([2 4])*rescaleFactor,coords([3 3])*rescaleFactor,'k-','lineWidth',line_width)
+        plot(coords([4 4])*rescaleFactor,coords([1 3])*rescaleFactor,'k-','lineWidth',line_width)
+        hold off
+        
+        significant_pixels=mean(heatplot_norm(:)>TH)*100;
+        
+        title_str=sprintf([folder_name_disp '(N=%d, sign=%3.2f%%)'],[sum(sel) significant_pixels])
+        T=title(title_str);
+        
+        
+        set(T,'FontName','Courier New','fontSize',6)
+        axis([coords(1) coords(3) coords(2) coords(4)]*rescaleFactor)
+        
+        colormap parula
+        drawnow
+        
+        if saveIt==1
+            %%            
+            if TH_it==1
+                saveName=fullfile('output',databaseName,[folder_name '_TH']);
+            else
+                saveName=fullfile('output',databaseName,folder_name);
+            end
+            savec(saveName)
+            print(gcf,'-dpng','-r300',saveName)
+            print(gcf,saveName,'-depsc')
+        end
+        
+        %%
         
     end
 end
 
-%
-
-
-
-
-% nTotal=3001;
-% window_type=1;
-
-
-% %%% Define windows
-% %nTotal=3000;
-% switch window_type
-%     case 1 % full
-%         windowSize=nTotal;%125;
-%         nOverlap=0;%100;
-%     case 2
-%         windowSize=125;
-%         nOverlap=0;
-%     case 3
-%         windowSize=1250;
-%         nOverlap=0;
-% end
-
-
-
-
-% X_min=min(allTracks(:,data_cols(1)));
-% Y_min=min(allTracks(:,data_cols(2)));
-%
-% min_value=[6 4];%min([X_min Y_min])-10;
-%
-% %use_sorting='days';
-% use_sorting='folders';
-% switch use_sorting
-%     case 'folders'
-%         groupAllocation_vector=demographics(:,1);
-%     case 'days'
-%         groupAllocation_vector=TrialAllocation.data(:,4);
-%     case 'batch-days'
-%         batch_select=4;
-%         sel=TrialAllocation.data(:,3)==batch_select;
-%         groupAllocation_vector=TrialAllocation.data(sel,1);
-% end
-% group_nrs=unique(groupAllocation_vector);
-% nGroups=length(group_nrs);
-%
-% %imSize=[154 154];
-% imSize=[200 200];
-% if exist('poolCoords','var')
-%     centerCoords=poolCoords.center;
-%     radius=poolCoords.radius;
-%     platForm_coords=platFormCoords.coords(1).center;
-%     platForm_radius=platFormCoords.coords(1).radius;
-%     poolCoords.imSize=imSize;
-% else
-%     centerCoords=[109 76];
-%     radius=75;
-%     platForm_coords=[138 103];
-%     platForm_radius=7;
-% end
-%
-% if saveIt==0
-%     rescaleFactor=2;
-% end
-%
-%
-%
-% %%
-% offset=windowSize-nOverlap;
-% nWindows=floor((nTotal-nOverlap)/offset);
-% timePoints=[(((1:nWindows)-1)*offset+1)' (((1:nWindows)-1)*offset+windowSize)'];
-% nIntervals=size(timePoints,1);
-%
-% %mask=drawCircle2(poolCoords.radius*rescaleFactor,(poolCoords.center-min_value)*rescaleFactor,poolCoords.imSize*rescaleFactor);
-% % mask=drawCircle2(poolCoords.radius*rescaleFactor,(poolCoords.center-min_value)*rescaleFactor,poolCoords.imSize*rescaleFactor);
-% % mask=rot90(mask);
-% % imshow(mask)
-% %%
-% figure
-% clf
-% for interval=1:nIntervals
-%     timeInterval=timePoints(interval,:);
-%
-%     nCols=floor(sqrt(nGroups));
-%     nRows=ceil(nGroups/nCols);
-%     for iGroup=1:nGroups
-%         group_nr=group_nrs(iGroup);
-%         switch use_sorting
-%             case 'groups'
-%                 groupName=folder_list{iGroup};
-%                 groupName(groupName=='_')=' ';
-%             case 'days'
-%                 groupName=sprintf('Day%02d',iGroup);
-%             case 'batch-days'
-%                 groupName=folder_list{group_nr}
-%             case 'folders'
-%                 groupName=folder_list{group_nr}
-%         end
-%
-%         selectedTracks=find(ismember(groupAllocation_vector,group_nr));
-%
-%         %saveName=['output\' databaseName '\' databaseName '_' groupName '_T_' padZeros(timeInterval(1),3) '-' padZeros(timeInterval(2),3) '.png'];
-%         saveName=fullfile('output',databaseName,[databaseName '_' groupName '_T_' padZeros(timeInterval(1),3) '-' padZeros(timeInterval(2),3) '.png']);
-%         if saveIt==0 || ~exist(saveName,'file')
-%
-%             if max(allTracks(:,3))>nTotal
-%                 sprintf('Maximum trial duration (%3.2f) > nTotal (%3.2f).',[max(allTracks(:,3)) nTotal])
-%                 warning('Not using all available data, check value of nTotal')
-%             end
-%
-%             allTracks=cat(1,AllTracks(selectedTracks).data);
-%             tracks=allTracks(between(allTracks(:,1),timeInterval),:);
-%             tracks(:,2:3)=tracks(:,2:3);%-min_value;
-%
-%             %%% Get real data
-%             %HP_actual=makeHeatplot(tracks(:,2:3),kernelSize,poolCoords.imSize,[0 0]);
-%             HP_actual=makeHeatplot(tracks(:,2:3),kernelSize,size(poolCoords.mask),[1 0]);
-%             %imagesc(HP_actual)
-%             %axis equal
-%
-%             %%% Get random data
-%             perm_matrix=zeros(nPerm,3);
-%             t0=clock;
-%             for iPerm=1:nPerm
-%                 tracks_random=[];
-%                 for iTrack=1:length(selectedTracks)
-%                     track=AllTracks(selectedTracks(iTrack)).data(:,2:3);
-%                     randomtrack=randomizeTrack(track,poolCoords);
-%                     tracks_random=cat(1,tracks_random,randomtrack);
-%                 end
-%
-%                 tracks_random(:,1)=tracks_random(:,1)-min(tracks_random(:,1))+1;
-%                 tracks_random(:,2)=tracks_random(:,2)-min(tracks_random(:,2))+1;
-%                 HP_random=makeHeatplot(tracks_random,kernelSize,poolCoords.imSize,[1 0]);
-%                 perm_matrix(iPerm,:)=[iPerm mean(HP_random(:)) std(HP_random(:))];
-%                 %imagesc(HP_random)
-%                 %axis equal
-%                 progress(iPerm,nPerm,t0)
-%             end
-%
-%             MU=mean(perm_matrix(:,2));
-%             SIGMA=mean(perm_matrix(:,3));
-%
-%             heatplot_norm=(HP_actual-MU)/SIGMA;
-%
-%             A=heatplot_norm;
-%             Ymin=min(A(:));
-%
-%             if saveIt==0
-%                 %%
-%                 subplot(nRows,nCols,iGroup)
-%                 %subplot(nIntervals,nRows,(interval-1)*nGroups+groupNr)
-%                 %Ymax=max(A(:));
-%                 Ymax=5;
-%                 Yrange=[-2 Ymax];
-%                 title([groupName ' (t' num2str(timeInterval(1)) '-' num2str(timeInterval(2)) ')'])
-%                 hold on
-%                 lineWidth=1;
-%             else
-%                 symmetricColorScale=0;
-%                 switch symmetricColorScale
-%                     case 1
-%                         Ymax=3; % fixed value based on visual inspection
-%                         Yrange=[-Ymax Ymax];
-%                     case 0
-%                         Yrange=[-2 3];
-%                 end
-%                 lineWidth=3;
-%             end
-%
-%             %%
-%             HP=imresize(A,rescaleFactor);
-%             im=imshow(HP,Yrange);
-%             hold on
-%             circle((poolCoords.center-min_value)*rescaleFactor,poolCoords.radius*rescaleFactor+3,1000,'k-',lineWidth*3);
-%             plot((poolCoords.center([1 1])-min_value(1))*rescaleFactor,((poolCoords.center([2 2])-min_value(2))+[-poolCoords.radius poolCoords.radius])*rescaleFactor,'k-','lineWidth',lineWidth);
-%             plot(((poolCoords.center([1 1])-min_value(1))+[-poolCoords.radius poolCoords.radius])*rescaleFactor,(poolCoords.center([2 2])-min_value(2))*rescaleFactor,'k-','lineWidth',lineWidth);
-%
-%             platform_position=mean(platFormCoords.PF_matrix(selectedTracks,6));
-%
-%             if platform_position==1
-%                 circle((platForm_coords-min_value)*rescaleFactor,platForm_radius*rescaleFactor,1000,'k-',lineWidth);
-%             elseif platform_position==2
-%                 circle((platForm_coords-min_value)*rescaleFactor,platForm_radius*rescaleFactor,1000,'k--',lineWidth); % show previous as broken line
-%                 circle((platFormCoords.coords(2).center-min_value)*rescaleFactor,platFormCoords.coords(2).radius*rescaleFactor,1000,'k-',lineWidth);
-%             end
-%             hold off
-%
-%             colormap jet
-%             %colormap hot
-%             set(im,'AlphaData',imresize(poolCoords.mask,rescaleFactor))
-%
-%             %%
-%             imageHandles(iGroup)=im;
-%
-%             if saveIt==1
-%                 savec(saveName)
-%                 print(gcf,'-dpng','-r300',saveName)
-%                 die
-%             else
-%                 set(gca,'ButtonDownFcn',{@switchFcn,get(gca,'position')})
-%                 %set(gca,'fontsize',6)
-%                 t=title(groupName,'FontSize',6);
-%                 drawnow
-%                 %set(t,'FontSize',6)
-%             end
-%         end
-%
-%     end
-% end
-%
-%
-% %%
-% if saveIt==0
-%     for iGroup=1:nGroups
-%         maxVal=5;
-%         H=get(imageHandles(iGroup),'parent');
-%         set(H,'Clim',[-maxVal maxVal])
-%     end
-% end
