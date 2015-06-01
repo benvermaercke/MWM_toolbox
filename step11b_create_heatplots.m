@@ -5,7 +5,7 @@ header_script_MWM
 
 plot_it=1;
 saveIt=0;
-TH_it=1;
+TH_it=0;
 TH=2.7;
 
 kernelSize=10; % was 35
@@ -46,7 +46,7 @@ for iFolder=1:nFolders
         
         %%% create real heatplot
         M=cat(1,AllTracks(sel).data_corrected);
-        HP_actual=makeHeatplot(M(:,data_cols)*rescaleFactor,kernelSize*rescaleFactor,arenaCoords(1).im_size*rescaleFactor,[0 0]);
+        HP_actual=makeHeatplot(M(:,data_cols)*rescaleFactor,kernelSize*rescaleFactor,arenaCoords(1).im_size*rescaleFactor,[1 0]);
         %%
         %%% create permutations to find MU and SIGMA
         MU_vector=zeros(nPerm,1);
@@ -116,7 +116,16 @@ for iFolder=1:nFolders
         end        
         
         if TH_it==1
-            im=imshow(heatplot_show>TH,[0 1]);
+            heatplot_show_TH=heatplot_show>TH;
+            RP=regionprops(heatplot_show_TH);
+            RP.Area
+            
+            IL = bwlabel(heatplot_show_TH);
+            R = regionprops(heatplot_show_TH,'Area');
+            ind = find([R.Area] >= 3000 );
+            Iout = ismember(IL,ind);
+            
+            im=imshow(Iout ,[0 1]);
         else
             im=imshow(heatplot_show,[-1 1]*4);
         end
