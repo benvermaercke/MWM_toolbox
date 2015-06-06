@@ -103,7 +103,7 @@ for iFolder=1:nFolders
         Heatplots(iFolder).SIGMA=SIGMA;
         Heatplots(iFolder).heatplot_norm=heatplot_norm;
         
-        progress(iPerm,nPerm,t0)
+        progress(iFolder,nFolders,t0)
         
         %%% Save results after every folder
         if saveIt==1
