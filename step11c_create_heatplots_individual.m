@@ -119,7 +119,7 @@ for iAnimal=1:nAnimals_max
                 %%% Save results after every folder
                 if saveIt==1                            
                     saveName=sprintf([loadName '_M%03d'],iAnimal);
-                    copyfile(loadName,saveName)
+                    copyfile([loadName '.mat'],[saveName '.mat'])
                     save(saveName,'Heatplots','-append')
                     disp(['Saved heatplot information to ' saveName])
                 end
