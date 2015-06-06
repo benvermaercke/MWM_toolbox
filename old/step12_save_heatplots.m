@@ -3,7 +3,7 @@ clc
 
 header_script_MWM
 
-plot_it=0;
+plot_it=1;
 saveIt=0;
 TH_it=0;
 TH=2.7;
