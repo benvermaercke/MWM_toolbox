@@ -4,7 +4,7 @@ clc
 header_script_MWM
 
 plot_it=1;
-saveIt=0;
+saveIt=1;
 
 kernel_size=10; % was 35
 nPerm=100; % Determines number of random distributions to base population on (usually 10)
