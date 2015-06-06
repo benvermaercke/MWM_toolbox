@@ -42,6 +42,7 @@ nAnimals_max=10;
 for iAnimal=1:nAnimals_max
     
     Heatplots=struct;
+    t0=clock;
     for iFolder=1:nFolders
         folder_name=folder_names{iFolder};
         folder_name_disp=strrep(folder_name,'_',' ');
@@ -61,8 +62,7 @@ for iAnimal=1:nAnimals_max
                 %%
                 %%% create permutations to find MU and SIGMA
                 MU_vector=zeros(nPerm,1);
-                SIGMA_vector=ones(nPerm,1);
-                t0=clock;
+                SIGMA_vector=ones(nPerm,1);                
                 for iPerm=1:nPerm
                     %%
                     tracks_random=[];
@@ -87,9 +87,7 @@ for iAnimal=1:nAnimals_max
                     end
                     HP_random=makeHeatplot(tracks_random,kernel_size,arenaCoords.im_size,[1 0]);
                     MU_vector(iPerm)=mean(HP_random(:));
-                    SIGMA_vector(iPerm)=std(HP_random(:));
-                    
-                    progress(iPerm,nPerm,t0)
+                    SIGMA_vector(iPerm)=std(HP_random(:));                    
                 end
                 
                 %%% analyse results
@@ -114,6 +112,9 @@ for iAnimal=1:nAnimals_max
                 Heatplots(iFolder).SIGMA_vector=SIGMA_vector;
                 Heatplots(iFolder).SIGMA=SIGMA;
                 Heatplots(iFolder).heatplot_norm=heatplot_norm;
+                                
+                %%% Show progress
+                progress(iPerm,nPerm,t0)
                 
                 %%% Save results after every folder
                 if saveIt==1                            
