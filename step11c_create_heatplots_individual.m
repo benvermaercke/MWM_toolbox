@@ -7,7 +7,7 @@ plot_it=1;
 saveIt=0;
 
 kernel_size=10; % was 35
-nPerm=0; % Determines number of random distributions to base population on (usually 10)
+nPerm=10; % Determines number of random distributions to base population on (usually 10)
 rescaleFactor=10; % improves the resolution of the resulting eps image
 
 try
@@ -17,7 +17,7 @@ catch
 end
 load(loadName,'AllTracks','TrackInfo','demographics','arenaCoords')
 
-die
+
 folders=demographics(:,1);
 folder_vector=unique(folders);
 nFolders=length(folder_vector);
@@ -48,7 +48,7 @@ for iAnimal=1:nAnimals_max
         sel=folders==folder_vector(iFolder);
         track_nr_vector=find(sel);
         if length(track_nr_vector)<iAnimal
-            fprintf('No animal %d in this group',iAnimal)
+            fprintf('No animal %d in group %d\n',[iAnimal iFolder])
         else
             track_nr_vector=track_nr_vector(iAnimal);
             nTracks=length(track_nr_vector);
@@ -116,10 +116,11 @@ for iAnimal=1:nAnimals_max
                 Heatplots(iFolder).heatplot_norm=heatplot_norm;
                 
                 %%% Save results after every folder
-                if saveIt==1
-                    disp('Saved heatplot information')
-                    saveName=sprintf([loadName '_M%03d'],iAnimal)
+                if saveIt==1                            
+                    saveName=sprintf([loadName '_M%03d'],iAnimal);
+                    copyfile(loadName,saveName)
                     save(saveName,'Heatplots','-append')
+                    disp(['Saved heatplot information to ' saveName])
                 end
             end
         end

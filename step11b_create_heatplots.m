@@ -7,7 +7,7 @@ plot_it=1;
 saveIt=0;
 
 kernel_size=10; % was 35
-nPerm=0; % Determines number of random distributions to base population on (usually 10)
+nPerm=100; % Determines number of random distributions to base population on (usually 10)
 rescaleFactor=10; % improves the resolution of the resulting eps image
 
 try
