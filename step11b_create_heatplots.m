@@ -4,7 +4,7 @@ clc
 header_script_MWM
 
 plot_it=1;
-saveIt=1;
+saveIt=0;
 
 kernel_size=10; % was 35
 nPerm=0; % Determines number of random distributions to base population on (usually 10)
@@ -32,7 +32,6 @@ if 0
     sel=folders==folder_vector(iFolder);
 end
 
-
 %%
 Heatplots=struct;
 for iFolder=1:nFolders
@@ -40,7 +39,6 @@ for iFolder=1:nFolders
     folder_name_disp=strrep(folder_name,'_',' ');
     sel=folders==folder_vector(iFolder);
     track_nr_vector=find(sel);
-    %track_nr_vector=track_nr_vector(1);
     nTracks=length(track_nr_vector);
     
     if nTracks>0
@@ -48,7 +46,6 @@ for iFolder=1:nFolders
         M=cat(1,AllTracks(track_nr_vector).data_corrected);
         HP_actual=makeHeatplot(M(:,data_cols)*rescaleFactor,kernel_size*rescaleFactor,arenaCoords(1).im_size*rescaleFactor,[0 0]);
         
-        %%
         %%% create permutations to find MU and SIGMA
         MU_vector=zeros(nPerm,1);
         SIGMA_vector=ones(nPerm,1);
@@ -108,8 +105,9 @@ for iFolder=1:nFolders
         %%% Save results after every folder
         if saveIt==1
             disp('Saved heatplot information')
-            save(loadName,'Heatplots','-append')
+            saveName=loadName;
+            save(saveName,'Heatplots','-append')
         end
-    end    
+    end
 end
 
