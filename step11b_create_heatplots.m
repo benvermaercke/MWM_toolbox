@@ -107,9 +107,9 @@ for iFolder=1:nFolders
         
         %%% Save results after every folder
         if saveIt==1
-            disp('Saved heatplot information')
             saveName=loadName;
             save(saveName,'Heatplots','-append')
+            disp(['Saved heatplot information to ' saveName])
         end                
     end
 end
