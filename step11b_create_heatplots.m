@@ -51,8 +51,15 @@ for iFolder=1:nFolders
         MU_vector=zeros(nPerm,1);
         SIGMA_vector=ones(nPerm,1);
         
+        fprintf('Performing %d permutations: ',nPerm)
         for iPerm=1:nPerm
-            %%
+            %%% Show progress
+            if iPerm>1
+                fprintf('\b\b\b\b\b\b')
+            end
+            fprintf('%03.2f%%',iPerm/nPerm*100)
+            
+            %%% Randomize tracks
             tracks_random=[];
             for iTrack=1:nTracks
                 track_nr=track_nr_vector(iTrack);
@@ -75,10 +82,10 @@ for iFolder=1:nFolders
             end
             HP_random=makeHeatplot(tracks_random,kernel_size,arenaCoords.im_size,[1 0]);
             MU_vector(iPerm)=mean(HP_random(:));
-            SIGMA_vector(iPerm)=std(HP_random(:));
-            
-            
+            SIGMA_vector(iPerm)=std(HP_random(:));                        
         end
+        fprintf('%s\n',' Done!')
+        
         
         %%% analyse results
         if isempty(MU_vector)
