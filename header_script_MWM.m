@@ -33,8 +33,9 @@ if isdir(data_folder)
     databaseName(databaseName==' ')='_';
     
     saveIt=1;
-    MWMtype=3; % 1: old | 2: new | 3: open field
-    data_cols=[3 4]; % data_cols=[2 3];
+    MWMtype=2; % 1: old | 2: new | 3: open field
+    data_cols=[2 3]; % data_cols=[2 3];
+    %data_cols=[3 4]; % data_cols=[2 3];
     border_size=[5 5];
     %im_size=[200 200];
     
