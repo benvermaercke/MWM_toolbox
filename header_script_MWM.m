@@ -6,7 +6,8 @@ if ispc
     data_folder='E:\LeuvenData\Developement\MWMtoolbox\rawFiles\ACL_Reversal_acquisition_track';
 else
     if ismac
-        data_root='/Users/benvermaercke/Dropbox (Personal)';
+        %data_root='/Users/benvermaercke/Dropbox (Personal)';
+        data_root='/Users/benvermaercke/Dropbox (coxlab)';
         %data_folder=fullfile(data_root,'heatplots tau58');
         data_folder=fullfile(data_root,'Disconnection SearchStrategies');
     else % server
@@ -37,6 +38,7 @@ if isdir(data_folder)
     data_cols=[2 3]; % data_cols=[2 3];
     %data_cols=[3 4]; % data_cols=[2 3];
     border_size=[5 5];
+    use_data_field='data';
     %im_size=[200 200];
     
     fprintf('Working from %s\n',data_folder)
