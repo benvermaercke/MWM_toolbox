@@ -55,9 +55,9 @@ for iFolder=1:nFolders
         for iPerm=1:nPerm
             %%% Show progress
             if iPerm>1
-                fprintf('\b\b\b\b\b\b')
+                fprintf('\b\b\b\b')
             end
-            fprintf('%03.2f%%',iPerm/nPerm*100)
+            fprintf('%03d%%',round(iPerm/nPerm*100))
             
             %%% Randomize tracks
             tracks_random=[];
