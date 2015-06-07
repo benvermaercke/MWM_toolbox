@@ -11,8 +11,8 @@ else
         data_folder=fullfile(data_root,'Disconnection SearchStrategies');
     else % server
         [~, user_name] = system('whoami');user_name=user_name(1:end-1);
-        root_folder=fullfile('/home/',user_name,'/MWM_toolbox/'); % temp location
-        %root_folder=fullfile('/home/',user_name,'/Dropbox (coxlab)/'); % temp location
+        %root_folder=fullfile('/home/',user_name,'/MWM_toolbox/'); % temp location
+        root_folder=fullfile('/home/',user_name,'/Dropbox (coxlab)/'); % temp location
         %data_folder=fullfile(root_folder,'heatplots tau58');
         data_folder=fullfile(root_folder,'Disconnection SearchStrategies');        
     end
