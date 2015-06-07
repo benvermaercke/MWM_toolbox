@@ -9,7 +9,7 @@ header_script_MWM
 %saveIt=0;
 
 try
-    loadName=fullfile('dataSets',databaseName);
+    loadName=fullfile(data_folder,'dataSets',databaseName);
 catch
     loadName=fullfile('dataSets_17parameters',filename);
 end
