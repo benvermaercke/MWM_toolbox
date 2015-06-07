@@ -4,7 +4,7 @@ clear all
 header_script_MWM
 
 plotIt=1;
-saveIt=0;
+saveIt=1;
 
 im_size=[200 200];
 
@@ -13,10 +13,10 @@ loadName=fullfile('dataSets',databaseName);
 load(loadName,'AllTracks','nTracks','demographics')
 
 
-arena_IDs=demographics(:,6);
-arena_ID_vector=unique(arena_IDs)
-nArena=length(arena_ID_vector);
-arena_selector=1:nArena
+%arena_IDs=demographics(:,6);
+%arena_ID_vector=unique(arena_IDs);
+%nArena=length(arena_ID_vector);
+%arena_selector=1:nArena
 
 M=cat(1,AllTracks.data_corrected);
 X=M(:,data_cols(1));
@@ -32,7 +32,7 @@ switch 3
         centerY=mean([prctile(Y,.4) prctile(Y,99.6)]);
     case 3
         %%        
-        H=makeHeatplot([X Y],15,im_size,[1 0]);
+        H=makeHeatplot([X Y],15,im_size,[0 0]);
         TH=prctile(H(:),65);
         H_TH=H>TH;
         H_TH=imfill(H_TH,'holes');
@@ -41,8 +41,8 @@ switch 3
         H_edge=H_TH-H_shrink;
         [edge_X,edge_Y]=find(H_edge==1);
         ellipse_t=fit_ellipse(edge_X,edge_Y);
-        centerX=ellipse_t.X0_in+min(X);
-        centerY=ellipse_t.Y0_in+min(Y);
+        centerX=ellipse_t.X0_in;%+min(X);
+        centerY=ellipse_t.Y0_in;%+min(Y);
     case 4
         H=makeHeatplot([X Y],15,im_size,[1 0]);
         TH=prctile(H(:),65);
@@ -85,7 +85,7 @@ poolCoords.radius=radius;
 % does not take into account the existence of probe trials.
 endCoords=zeros(nTracks,4);
 for iTrack=1:nTracks
-    track_data=AllTracks(iTrack).data;
+    track_data=AllTracks(iTrack).data_corrected;
     endCoords(iTrack,:)=[iTrack size(track_data,1) track_data(end,2:3)];
 end
 failure_trials=endCoords(:,2)==max(endCoords(:,2));
