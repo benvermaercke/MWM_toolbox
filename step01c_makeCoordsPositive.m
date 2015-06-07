@@ -3,7 +3,7 @@ clc
 
 header_script_MWM
 
-%saveIt=0;
+saveIt=1;
 
 try
     loadName=fullfile('dataSets',databaseName);
@@ -22,7 +22,7 @@ arenaCoords=struct;
 M=cat(1,AllTracks(1).data);
 sampling_rate=mean(1./diff(M(1:10,2)));
 
-correction_method=3;
+correction_method=1;
 
 switch correction_method
     case 0 % Do nothing
@@ -42,11 +42,12 @@ switch correction_method
                 M=AllTracks(track_nr).data;
                 M(:,data_cols(1))=M(:,data_cols(1))+re_alignment_values(1);
                 M(:,data_cols(2))=M(:,data_cols(2))+re_alignment_values(2);
-                AllTracks(track_nr).data=M;
+                AllTracks(track_nr).data_corrected=M;
             end
         end
         
     case 2 % Do correction per folder
+        
     case 3 % Do correction per track (risky! in case animal does not enter the origin)
         re_alignment_values=[5 5];
         nTracks=length(AllTracks);
@@ -54,13 +55,31 @@ switch correction_method
             track=AllTracks(iTrack).data;
             track_corrected=track;
             track_corrected(:,data_cols)=[track(:,data_cols(1))-min(track(:,data_cols(1)))+re_alignment_values(1) track(:,data_cols(2))-min(track(:,data_cols(2)))+re_alignment_values(2)];
+            %X=track(:,data_cols(1));
+            %Y=track(:,data_cols(2));
+            %track_corrected(:,data_cols)=[X-min(M(:,data_cols(1))) Y-min(M(:,data_cols(2)))];
             AllTracks(iTrack).data_corrected=track_corrected;
         end
 end
 
-%%% Sanity check
+%%
+
+%% Sanity check
+subplot(211)
+M=cat(1,AllTracks.data);
+min(M)
+plot(M(:,2),M(:,3),'.')
+axis([-100 200 -100 200])
+axis square
+
+subplot(212)
 M=cat(1,AllTracks.data_corrected);
 min(M)
+plot(M(:,2),M(:,3),'.')
+axis([-100 200 -100 200])
+axis square
+
+%%
 
 if saveIt==1
     %%
