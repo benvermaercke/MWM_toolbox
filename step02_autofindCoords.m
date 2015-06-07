@@ -62,7 +62,7 @@ arenaCoords.bottom=[centerX max(Y)];
 arenaCoords.left=[min(X) centerY];
 arenaCoords.right=[max(X) centerY];
 %poolCoords.imSize=[154 207];
-arenaCoords.imSize=im_size;
+arenaCoords.im_size=im_size;
 arenaCoords.mask=H_TH;
 
 %% calculate optimal radius of pool in pixels
@@ -189,7 +189,7 @@ arenaCoords.annulusRadii=[centerAnnulus platFormAnnulus peripheryAnnulus];
 if saveIt==1
     %%
     save(loadName,'arenaCoords','targetCoords','-append')
-    disp(['Pool and platform coordinates were saved to data file: ' loadName])
+    disp(['Arena and target coordinates were saved to data file: ' loadName])
 end
 
 
