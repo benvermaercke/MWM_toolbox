@@ -56,14 +56,14 @@ switch 3
         plot(centerX,centerY,'m*')
         hold off
 end
-poolCoords.center=[centerX centerY];
-poolCoords.top=[centerX min(Y)];
-poolCoords.bottom=[centerX max(Y)];
-poolCoords.left=[min(X) centerY];
-poolCoords.right=[max(X) centerY];
+arenaCoords.center=[centerX centerY];
+arenaCoords.top=[centerX min(Y)];
+arenaCoords.bottom=[centerX max(Y)];
+arenaCoords.left=[min(X) centerY];
+arenaCoords.right=[max(X) centerY];
 %poolCoords.imSize=[154 207];
-poolCoords.imSize=im_size;
-poolCoords.mask=H_TH;
+arenaCoords.imSize=im_size;
+arenaCoords.mask=H_TH;
 
 %% calculate optimal radius of pool in pixels
 [angles, dist_vector]=cart2pol(X-centerX,Y-centerY);
@@ -79,7 +79,7 @@ switch 3
         radius=mean([ellipse_t.long_axis ellipse_t.short_axis])/2;
 end
 %poolCoords.center=[ellipse_t.X0 ellipse_t.Y0];
-poolCoords.radius=radius;
+arenaCoords.radius=radius;
 
 %% find all last points of each successful track
 % does not take into account the existence of probe trials.
@@ -124,14 +124,14 @@ if nClust==2
 end
 
 %% For each cluster (=platform position), find center and radius
-platFormCoords=struct;
+targetCoords=struct;
 for iClust=1:nClust
     sel=mapping==iClust;
     switch 2
         case 1
-            platFormCoords.coords(iClust).center=median(endCoords(sel,3:4));
-            platFormCoords.coords(iClust).radius=mean([mean(endCoords(sel,3:4))-prctile(endCoords(sel,3:4),1) prctile(endCoords(sel,3:4),99)-mean(endCoords(sel,3:4))]);
-            platFormCoords.coords(iClust).targetZoneRadius=platFormCoords.coords(iClust).radius*2.5;
+            targetCoords.coords(iClust).center=median(endCoords(sel,3:4));
+            targetCoords.coords(iClust).radius=mean([mean(endCoords(sel,3:4))-prctile(endCoords(sel,3:4),1) prctile(endCoords(sel,3:4),99)-mean(endCoords(sel,3:4))]);
+            targetCoords.coords(iClust).targetZoneRadius=targetCoords.coords(iClust).radius*2.5;
         case 2
             %%            
 %             H=makeHeatplot(endCoords(sel,3:4),2);
@@ -146,17 +146,17 @@ for iClust=1:nClust
             ellipse_t=fit_ellipse(endCoords(sel,3),endCoords(sel,4));
             imshow(H_edge,[])
             
-            platFormCoords.coords(iClust).center=[ellipse_t.X0_in ellipse_t.Y0_in];
-            platFormCoords.coords(iClust).radius=mean([ellipse_t.long_axis ellipse_t.short_axis])/2;
-            platFormCoords.coords(iClust).targetZoneRadius=platFormCoords.coords(iClust).radius*2.5;
+            targetCoords.coords(iClust).center=[ellipse_t.X0_in ellipse_t.Y0_in];
+            targetCoords.coords(iClust).radius=mean([ellipse_t.long_axis ellipse_t.short_axis])/2;
+            targetCoords.coords(iClust).targetZoneRadius=targetCoords.coords(iClust).radius*2.5;
         case 3 % bivariate normal fit
             %%
             M=endCoords(:,3:4);
             tic
             F=fitgmdist(M,2);
-            platFormCoords.coords(iClust).center=F.mu(iClust,:);
-            platFormCoords.coords(iClust).radius=F.Sigma(1,1,iClust)/2;
-            platFormCoords.coords(iClust).targetZoneRadius=platFormCoords.coords(iClust).radius*2.5;
+            targetCoords.coords(iClust).center=F.mu(iClust,:);
+            targetCoords.coords(iClust).radius=F.Sigma(1,1,iClust)/2;
+            targetCoords.coords(iClust).targetZoneRadius=targetCoords.coords(iClust).radius*2.5;
             toc
     end
 end
@@ -175,20 +175,20 @@ for iFolder=1:nFolders
     PF_matrix(sel,6)=fillTheGaps2(PF_matrix(sel,6));
 end
 
-platFormCoords.PF_matrix=PF_matrix;
+targetCoords.PF_matrix=PF_matrix;
 
 %%% Set annulus radii
-PF_pos01=platFormCoords.coords(1);
-platForm2center=calc_dist([poolCoords.center PF_pos01.center]);
+PF_pos01=targetCoords.coords(1);
+platForm2center=calc_dist([arenaCoords.center PF_pos01.center]);
 centerAnnulus=platForm2center-PF_pos01.radius;
 platFormAnnulus=platForm2center+PF_pos01.radius;
 peripheryAnnulus=platForm2center+PF_pos01.radius*2.5;
-poolCoords.annulusRadii=[centerAnnulus platFormAnnulus peripheryAnnulus];
+arenaCoords.annulusRadii=[centerAnnulus platFormAnnulus peripheryAnnulus];
 
 %%% overwrite parameters in the datafile
 if saveIt==1
     %%
-    save(loadName,'poolCoords','platFormCoords','-append')
+    save(loadName,'arenaCoords','targetCoords','-append')
     disp(['Pool and platform coordinates were saved to data file: ' loadName])
 end
 
@@ -203,29 +203,29 @@ if plotIt==1
     clf
     hold on
     plot(X(1:N),Y(1:N),'.-')
-    plot(poolCoords.center(1),poolCoords.center(2),'m*','markerSize',10)
-    circle(poolCoords.center,poolCoords.radius,1000,'k-',3);
+    plot(arenaCoords.center(1),arenaCoords.center(2),'m*','markerSize',10)
+    circle(arenaCoords.center,arenaCoords.radius,1000,'k-',3);
     
-    for index=1:length(poolCoords.annulusRadii)
-        circle(poolCoords.center,poolCoords.annulusRadii(index),1000,'r:',2);
+    for index=1:length(arenaCoords.annulusRadii)
+        circle(arenaCoords.center,arenaCoords.annulusRadii(index),1000,'r:',2);
     end
     plot(endCoords(:,3),endCoords(:,4),'co')
-    for iPF=1:length(platFormCoords.coords)
-        circle(platFormCoords.coords(iPF).center,platFormCoords.coords(iPF).radius,1000,'k-',3);
-        circle(platFormCoords.coords(iPF).center,platFormCoords.coords(iPF).radius*2.5,1000,'r-',3);
+    for iPF=1:length(targetCoords.coords)
+        circle(targetCoords.coords(iPF).center,targetCoords.coords(iPF).radius,1000,'k-',3);
+        circle(targetCoords.coords(iPF).center,targetCoords.coords(iPF).radius*2.5,1000,'r-',3);
     end
-    if isfield(platFormCoords,'previous')
-        circle(platFormCoords.previous,platFormCoords.radius,1000,'k--',3);
-        circle(platFormCoords.previous,platFormCoords.radius*2.5,1000,'r--',3);
+    if isfield(targetCoords,'previous')
+        circle(targetCoords.previous,targetCoords.radius,1000,'k--',3);
+        circle(targetCoords.previous,targetCoords.radius*2.5,1000,'r--',3);
     end
     %plot([poolCoords.center(1) poolCoords.center(1)],[0 154],'k-')
     %plot([0 207],[poolCoords.center(2) poolCoords.center(2)],'k-')
     plot([centerX centerX],[centerY-160 centerY+160],'k-')
     plot([centerX-160 centerX+160],[centerY centerY],'k-')
     
-    if isfield(platFormCoords,'platformPositions')
-        for index=1:platFormCoords.nPositions
-            circle(platFormCoords.platformPositions(index,:),platFormCoords.radius,1000,'k-',3);
+    if isfield(targetCoords,'platformPositions')
+        for index=1:targetCoords.nPositions
+            circle(targetCoords.platformPositions(index,:),targetCoords.radius,1000,'k-',3);
         end
     end
     hold off
