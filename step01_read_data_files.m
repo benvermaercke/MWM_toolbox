@@ -61,8 +61,8 @@ initXLSreader
 
 t0=clock;
 trackNames=cell(nFiles,1);
-dataMatrix_all=struct('data',[],'fieldNames','');
-%trackInfo_all=struct('Start_time','','Video_file',[],'Tracking_source','','Duration','','Reference_time','','Trial_ID',[],'Arena_index',[],'Object_index',[],'Arena_settings','','Trial_name','','Arena_name','','Subject_name','','Track','','Trial_status','','Acquisition_status','','Track_status','','Recording_after','','Recording_duration','','Video_start_time',[],'Detection_settings','','Trial_control_settings','','Video_file_status','','Sync_status','','Reference_duration','','Sof_file',[],'mouse_ID','','trial',[],'Day',[],'treatment',[],'Lesion','','folderRoot','','folderName','','file_nr',[]);
+%dataMatrix_all=struct('data',[],'fieldNames','');
+trackInfo_all=struct('Start_time','','Video_file',[],'Tracking_source','','Duration','','Reference_time','','Trial_ID',[],'Arena_index',[],'Object_index',[],'Arena_settings','','Trial_name','','Arena_name','','Subject_name','','Track','','Trial_status','','Acquisition_status','','Track_status','','Recording_after','','Recording_duration','','Video_start_time',[],'Detection_settings','','Trial_control_settings','','Video_file_status','','Sync_status','','Reference_duration','','Sof_file',[],'mouse_ID','','trial',[],'Day',[],'treatment',[],'Lesion','','folderRoot','','folderName','','file_nr',[]);
 file_counter=0;
 for iFile=1:nFiles
     %%% Get track name
@@ -100,12 +100,12 @@ for iFile=1:nFiles
         %end
         
         %%% Fix trackInfo which has to match over all files
-        %if isfield(trackInfo,'User_defined_1')
-            %trackInfo=rmfield(trackInfo,'User_defined_1');
-        %end
-        %if ~isfield(trackInfo,'Lesion')
-            %trackInfo.Lesion='';
-        %end
+        if isfield(trackInfo,'User_defined_1')
+            trackInfo=rmfield(trackInfo,'User_defined_1');
+        end
+        if ~isfield(trackInfo,'Lesion')
+            trackInfo.Lesion='';
+        end
         
         %%% Build up trackInfo
         file_counter=file_counter+1;
