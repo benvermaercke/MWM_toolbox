@@ -8,17 +8,19 @@ saveIt=1;
 TH_it=0;
 TH=2.7;
 
-max_clim=8;
+max_clim=10;
 
 rescaleFactor=6; % improves the resolution of the resulting eps image
 
 nAnimals_max=10;
 for iAnimal=1:nAnimals_max
+    databaseName_use=sprintf([databaseName '_M%03d'],iAnimal);
+    
     try
         %loadName=fullfile('dataSets',databaseName);
-        loadName=fullfile('dataSets',sprintf([databaseName '_M%03d'],iAnimal));
+        loadName=fullfile('dataSets',databaseName_use);
     catch
-        loadName=fullfile('dataSets_17parameters',databaseName);
+        loadName=fullfile('dataSets_17parameters',databaseName_use);
     end
     load(loadName,'Heatplots','TrackInfo','demographics','arenaCoords')
     
@@ -104,13 +106,13 @@ for iAnimal=1:nAnimals_max
                 if saveIt==1
                     %%
                     if TH_it==1
-                        saveName=fullfile('output',databaseName,[folder_name '_TH']);
+                        saveName=fullfile('output',databaseName_use,[folder_name '_TH']);
                     else
-                        saveName=fullfile('output',databaseName,folder_name);
+                        saveName=fullfile('output',databaseName_use,folder_name);
                     end
                     savec(saveName)
                     print(gcf,'-dpng','-r300',saveName)
-                    print(gcf,saveName,'-depsc')
+                    %print(gcf,saveName,'-depsc')
                 end
             end
         end
