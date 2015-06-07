@@ -80,21 +80,24 @@ for iFile=1:nFiles
             parts2=strsplit(data_folder,filesep);
             parts1=strsplit(track_name,filesep);
             parts=parts1(length(parts2)+1:end-1);
-            folderName=strrep(strjoin(parts,'_'),' ','_');            
-            folderRoot=folderName(1:end-3);
+            folderName=strrep(strjoin(parts,'_'),' ','_'); 
+            %folderRoot=folderName(1:end-3);
+            
+            parts_root=strsplit(folderName,'_');            
+            folderRoot=strjoin(parts_root(1:end-1),'_');
     end
     
     %%% Read data from file
-    [dataMatrix_sheets, trackInfo_sheets]=readXLSdata(track_name,4);
+    [dataMatrix_sheets, trackInfo_sheets]=readXLSdata(track_name,max(data_cols));
     
     for iSheet=1:length(dataMatrix_sheets) 
         dataMatrix=dataMatrix_sheets(iSheet);
         trackInfo=trackInfo_sheets(iSheet);
         
         % Check for empty data
-        if ~any(dataMatrix.data(1,:))
-            die
-        end
+        %if ~any(dataMatrix.data(1,:))
+        %    die
+        %end
         
         %%% Fix trackInfo which has to match over all files
         %if isfield(trackInfo,'User_defined_1')
