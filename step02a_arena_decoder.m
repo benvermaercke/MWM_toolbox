@@ -6,8 +6,11 @@ header_script_MWM
 plotIt=1;
 saveIt=0;
 
-loadName=fullfile('dataSets',databaseName);
-% loadName=fullfile('dataSets_17parameters',filename);
+try
+    loadName=fullfile(data_folder,'dataSets',databaseName);
+catch
+    loadName=fullfile(data_folder,'dataSets_17parameters',databaseName);
+end
 load(loadName,'AllTracks','nTracks','demographics')
 
 arena_IDs=demographics(:,6);
@@ -17,7 +20,7 @@ arenaCoords=struct;
 for arena_selector=1:nArena
     sel=arena_IDs==arena_ID_vector(arena_selector);
     if sum(sel)>0
-        M=cat(1,AllTracks(sel).data);
+        M=cat(1,AllTracks(sel).(use_data_field));
         X=M(:,data_cols(1));
         Y=M(:,data_cols(2));
         

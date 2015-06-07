@@ -4,12 +4,15 @@ clear all
 header_script_MWM
 
 plotIt=1;
-saveIt=1;
+%saveIt=1;
 
 im_size=[200 200];
 
-loadName=fullfile('dataSets',databaseName);
-% loadName=fullfile('dataSets_17parameters',filename);
+try
+    loadName=fullfile(data_folder,'dataSets',databaseName);
+catch
+    loadName=fullfile(data_folder,'dataSets_17parameters',databaseName);
+end
 load(loadName,'AllTracks','nTracks','demographics')
 
 
@@ -18,7 +21,7 @@ load(loadName,'AllTracks','nTracks','demographics')
 %nArena=length(arena_ID_vector);
 %arena_selector=1:nArena
 
-M=cat(1,AllTracks.data_corrected);
+M=cat(1,AllTracks.(use_data_field));
 X=M(:,data_cols(1));
 Y=M(:,data_cols(2));
 
@@ -85,7 +88,7 @@ arenaCoords.radius=radius;
 % does not take into account the existence of probe trials.
 endCoords=zeros(nTracks,4);
 for iTrack=1:nTracks
-    track_data=AllTracks(iTrack).data_corrected;
+    track_data=AllTracks(iTrack).(use_data_field);
     endCoords(iTrack,:)=[iTrack size(track_data,1) track_data(end,2:3)];
 end
 failure_trials=endCoords(:,2)==max(endCoords(:,2));

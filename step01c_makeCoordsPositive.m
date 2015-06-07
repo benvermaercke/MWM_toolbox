@@ -3,13 +3,13 @@ clc
 
 header_script_MWM
 
-saveIt=1;
+%saveIt=1;
 correction_method=1;
 
 try
-    loadName=fullfile('dataSets',databaseName);
+    loadName=fullfile(data_folder,'dataSets',databaseName);
 catch
-    loadName=fullfile('dataSets_17parameters',filename);
+    loadName=fullfile(data_folder,'dataSets_17parameters',databaseName);
 end
 
 load(loadName,'AllTracks','demographics')
@@ -23,6 +23,10 @@ arenaCoords=struct;
 M=cat(1,AllTracks(1).data);
 sampling_rate=mean(1./diff(M(1:10,2)));
 
+if isfield(AllTracks,'data_corrected')
+    AllTracks=rmfield(AllTracks,'data_corrected');
+end
+    
 switch correction_method
     case 0 % Do nothing
     case 1 % Do correction per arena
@@ -41,7 +45,7 @@ switch correction_method
                 M=AllTracks(track_nr).data;
                 M(:,data_cols(1))=M(:,data_cols(1))+re_alignment_values(1);
                 M(:,data_cols(2))=M(:,data_cols(2))+re_alignment_values(2);
-                AllTracks(track_nr).data_corrected=M;
+                AllTracks(track_nr).(use_data_field)=M;
             end
         end
         
@@ -57,7 +61,7 @@ switch correction_method
             %X=track(:,data_cols(1));
             %Y=track(:,data_cols(2));
             %track_corrected(:,data_cols)=[X-min(M(:,data_cols(1))) Y-min(M(:,data_cols(2)))];
-            AllTracks(iTrack).data_corrected=track_corrected;
+            AllTracks(iTrack).(use_data_field)=track_corrected;
         end
 end
 
@@ -72,7 +76,7 @@ axis([-100 200 -100 200])
 axis square
 
 subplot(212)
-M=cat(1,AllTracks.data_corrected);
+M=cat(1,AllTracks.(use_data_field));
 min(M)
 plot(M(:,2),M(:,3),'.')
 axis([-100 200 -100 200])

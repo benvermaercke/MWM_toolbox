@@ -11,7 +11,7 @@ header_script_MWM
 try
     loadName=fullfile(data_folder,'dataSets',databaseName);
 catch
-    loadName=fullfile('dataSets_17parameters',filename);
+    loadName=fullfile(data_folder,'dataSets_17parameters',databaseName);
 end
 
 load(loadName,'AllTracks','nTracks')
