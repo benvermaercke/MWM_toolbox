@@ -64,7 +64,7 @@ for iFolder=1:nFolders
             for iTrack=1:nTracks
                 track_nr=track_nr_vector(iTrack);
                 arena_nr=arena_mapping(track_nr);
-                track_data=AllTracks(track_nr).data(:,data_cols);
+                track_data=AllTracks(track_nr).data_corrected(:,data_cols);
                 R_track=randomizeTrack(track_data,arenaCoords(arena_nr+1));
                 tracks_random=cat(1,tracks_random,R_track);
                 
