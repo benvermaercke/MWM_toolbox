@@ -4,16 +4,16 @@ clc
 header_script_MWM
 
 plot_it=1;
-saveIt=1;
+%saveIt=1;
 
-kernel_size=10; % was 35
+kernel_size=10; % was 35 => BV20150607 should be expressed in pixel_size_centrimeter units
 nPerm=100; % Determines number of random distributions to base population on (usually 10)
 rescaleFactor=10; % improves the resolution of the resulting eps image
 
 try
-    loadName=fullfile('dataSets',databaseName);
+    loadName=fullfile(data_folder,'dataSets',databaseName);
 catch
-    loadName=fullfile('dataSets_17parameters',filename);
+    loadName=fullfile(data_folder,'dataSets_17parameters',databaseName);
 end
 load(loadName,'AllTracks','TrackInfo','demographics','arenaCoords')
 
@@ -44,7 +44,7 @@ for iFolder=1:nFolders
     
     if nTracks>0
         %%% create real heatplot
-        M=cat(1,AllTracks(track_nr_vector).data_corrected);
+        M=cat(1,AllTracks(track_nr_vector).(use_data_field));
         HP_actual=makeHeatplot(M(:,data_cols)*rescaleFactor,kernel_size*rescaleFactor,arenaCoords(1).im_size*rescaleFactor,[0 0]);
         
         %%% create permutations to find MU and SIGMA
@@ -64,7 +64,7 @@ for iFolder=1:nFolders
             for iTrack=1:nTracks
                 track_nr=track_nr_vector(iTrack);
                 arena_nr=arena_mapping(track_nr);
-                track_data=AllTracks(track_nr).data_corrected(:,data_cols);
+                track_data=AllTracks(track_nr).(use_data_field)(:,data_cols);
                 R_track=randomizeTrack(track_data,arenaCoords(arena_nr+1));
                 tracks_random=cat(1,tracks_random,R_track);
                 
