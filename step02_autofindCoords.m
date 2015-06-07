@@ -6,22 +6,24 @@ header_script_MWM
 plotIt=1;
 saveIt=0;
 
+im_size=[200 200];
+
 loadName=fullfile('dataSets',databaseName);
 % loadName=fullfile('dataSets_17parameters',filename);
 load(loadName,'AllTracks','nTracks','demographics')
 
 
 arena_IDs=demographics(:,6);
-arena_ID_vector=unique(arena_ID_vector)
+arena_ID_vector=unique(arena_IDs)
 nArena=length(arena_ID_vector);
 arena_selector=1:nArena
 
-M=cat(1,AllTracks.data);
+M=cat(1,AllTracks.data_corrected);
 X=M(:,data_cols(1));
 Y=M(:,data_cols(2));
 
 %%% find center of points
-switch 4
+switch 3
     case 1
         centerX=mean([min(X) max(X)]);
         centerY=mean([min(Y) max(Y)]);
@@ -76,6 +78,7 @@ switch 3
     case 3
         radius=mean([ellipse_t.long_axis ellipse_t.short_axis])/2;
 end
+%poolCoords.center=[ellipse_t.X0 ellipse_t.Y0];
 poolCoords.radius=radius;
 
 %% find all last points of each successful track
