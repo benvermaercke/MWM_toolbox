@@ -51,7 +51,7 @@ for iFolder=1:nFolders
         MU_vector=zeros(nPerm,1);
         SIGMA_vector=ones(nPerm,1);
         
-        fprintf('Performing %d permutations: ',nPerm)
+        fprintf('%d) Performing %d permutations: ',[iFolder nPerm])
         for iPerm=1:nPerm
             %%% Show progress
             if iPerm>1
