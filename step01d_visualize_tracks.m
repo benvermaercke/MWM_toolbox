@@ -12,7 +12,7 @@ load(loadName,'AllTracks','demographics')
 
 
 %% Get general properties of the dataset
-M_all=cat(1,AllTracks.data);
+M_all=cat(1,AllTracks.data_corrected);
 X_range=[min(M_all(:,data_cols(1))) max(M_all(:,data_cols(1)))];
 Y_range=[min(M_all(:,data_cols(2))) max(M_all(:,data_cols(2)))];
 
@@ -27,7 +27,7 @@ title(arena_id)
 axis([X_range Y_range])
 
 %% per arena
-arena_id=2;
+arena_id=0;
 sel=demographics(:,6)==arena_id;
 track_nr_vector=find(sel);
 nTracks=length(track_nr_vector);
