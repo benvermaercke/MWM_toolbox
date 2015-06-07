@@ -3,7 +3,7 @@ clc
 
 header_script_MWM
 
-saveIt=1;
+%saveIt=1;
 
 %%% Create database file
 saveName=['dataSets/' databaseName '.mat'];

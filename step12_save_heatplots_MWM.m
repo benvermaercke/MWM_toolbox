@@ -4,16 +4,16 @@ clc
 header_script_MWM
 
 plot_it=1;
-saveIt=0;
+%saveIt=0;
 TH_it=0;
 TH=2.7;
 
 rescaleFactor=6; % improves the resolution of the resulting eps image
 
 try
-    loadName=fullfile('dataSets',databaseName);
+    loadName=fullfile(data_folder,'dataSets',databaseName);
 catch
-    loadName=fullfile('dataSets_17parameters',filename);
+    loadName=fullfile(data_folder,'dataSets_17parameters',databaseName);
 end
 load(loadName,'Heatplots','TrackInfo','demographics','arenaCoords')
 

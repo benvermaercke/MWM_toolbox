@@ -4,7 +4,7 @@ clc
 header_script_MWM
 
 plot_it=1;
-saveIt=1;
+%saveIt=1;
 TH_it=0;
 TH=2.7;
 
@@ -17,11 +17,10 @@ for iAnimal=1:nAnimals_max
     databaseName_use=sprintf([databaseName '_M%03d'],iAnimal);
     
     try
-        %loadName=fullfile('dataSets',databaseName);
-        loadName=fullfile('dataSets',databaseName_use);
-    catch
-        loadName=fullfile('dataSets_17parameters',databaseName_use);
-    end
+    loadName=fullfile(data_folder,'dataSets',databaseName_use);
+catch
+    loadName=fullfile(data_folder,'dataSets_17parameters',databaseName_use);
+end
     load(loadName,'Heatplots','TrackInfo','demographics','arenaCoords')
     
     folders=demographics(:,1);
