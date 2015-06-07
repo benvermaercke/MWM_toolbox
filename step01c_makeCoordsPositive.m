@@ -4,6 +4,7 @@ clc
 header_script_MWM
 
 saveIt=1;
+correction_method=1;
 
 try
     loadName=fullfile('dataSets',databaseName);
@@ -21,8 +22,6 @@ arenaCoords=struct;
 
 M=cat(1,AllTracks(1).data);
 sampling_rate=mean(1./diff(M(1:10,2)));
-
-correction_method=1;
 
 switch correction_method
     case 0 % Do nothing
@@ -49,7 +48,7 @@ switch correction_method
     case 2 % Do correction per folder
         
     case 3 % Do correction per track (risky! in case animal does not enter the origin)
-        re_alignment_values=[5 5];
+        re_alignment_values=border_size;
         nTracks=length(AllTracks);
         for iTrack=1:nTracks
             track=AllTracks(iTrack).data;
