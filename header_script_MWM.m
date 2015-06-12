@@ -41,22 +41,27 @@ if isdir(data_folder)
         case 1
             data_cols=[2 3]; % Leuven
             im_size=[200 200];
+            rescaleFactor=2; % improves the resolution of the resulting eps image
             kernel_size=35;
             correction_method=1;
+            
         case 2
             data_cols=[2 3]; % Leuven
             im_size=[200 200];
+            rescaleFactor=2; % improves the resolution of the resulting eps image
             kernel_size=35;
             correction_method=1;
         case 3
             data_cols=[3 4]; % Brisbane
             im_size=[40 40];
+            rescaleFactor=10; % improves the resolution of the resulting eps image
             kernel_size=10;
             correction_method=3;
         case 4
             data_cols=[3 4]; % Brisbane
             im_size=[450 450];
             kernel_size=40;
+            rescaleFactor=2; % improves the resolution of the resulting eps image
             correction_method=3;
         otherwise
     end
