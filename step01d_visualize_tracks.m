@@ -12,12 +12,12 @@ load(loadName,'AllTracks','demographics')
 
 
 %% Get general properties of the dataset
-M_all=cat(1,AllTracks.data_corrected);
+M_all=cat(1,AllTracks.(use_data_field));
 X_range=[min(M_all(:,data_cols(1))) max(M_all(:,data_cols(1)))];
 Y_range=[min(M_all(:,data_cols(2))) max(M_all(:,data_cols(2)))];
 
 %%
-iTrack=62;
+iTrack=1;
 arena_id=demographics(iTrack,6);
 
 M=AllTracks(iTrack).data;
@@ -56,7 +56,7 @@ axis equal
 
 
 %% per folder
-folder_id=7;
+folder_id=1;
 sel=demographics(:,1)==folder_id;
 track_nr_vector=find(sel);
 nTracks=length(track_nr_vector);
@@ -86,8 +86,8 @@ axis tight
 %%
 
 kernelSize=15;
-HP=makeHeatplot(M(:,data_cols),kernelSize,[40 40],[0 0]);
-HP_corrected=makeHeatplot(M_corrected(:,data_cols),kernelSize,[40 40],[0 0]);
+HP=makeHeatplot(M(:,data_cols),kernelSize,im_size,[0 0]);
+HP_corrected=makeHeatplot(M_corrected(:,data_cols),kernelSize,im_size,[0 0]);
 
 
 subplot(211)
