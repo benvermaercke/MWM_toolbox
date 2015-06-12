@@ -6,9 +6,9 @@ header_script_MWM
 plot_it=1;
 %saveIt=1;
 
-kernel_size=10; % was 35
+%kernel_size=10; % was 35
 nPerm=10; % Determines number of random distributions to base population on (usually 10)
-rescaleFactor=10; % improves the resolution of the resulting eps image
+
 
 try
     loadName=fullfile(data_folder,'dataSets',databaseName);
@@ -16,7 +16,7 @@ catch
     loadName=fullfile(data_folder,'dataSets_17parameters',databaseName);
 end
 load(loadName,'AllTracks','TrackInfo','demographics','arenaCoords')
-
+die
 
 folders=demographics(:,1);
 folder_vector=unique(folders);
@@ -37,7 +37,7 @@ end
 %%
 
 %% small mod to get individual heatplots, without saving all randomized versions.
-nAnimals_max=10;
+nAnimals_max=2;
 
 for iAnimal=1:nAnimals_max
     
