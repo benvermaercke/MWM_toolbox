@@ -3,8 +3,7 @@ clc
 
 header_script_MWM
 
-%saveIt=1;
-correction_method=1;
+%saveIt=0;
 
 try
     loadName=fullfile(data_folder,'dataSets',databaseName);
@@ -71,15 +70,15 @@ end
 subplot(211)
 M=cat(1,AllTracks.data);
 min(M)
-plot(M(:,2),M(:,3),'.')
-axis([-100 200 -100 200])
+plot(M(:,data_cols(1)),M(:,data_cols(2)),'.')
+%axis([-100 200 -100 200])
 axis square
 
 subplot(212)
 M=cat(1,AllTracks.(use_data_field));
 min(M)
-plot(M(:,2),M(:,3),'.')
-axis([-100 200 -100 200])
+plot(M(:,data_cols(1)),M(:,data_cols(2)),'.')
+%axis([-100 200 -100 200])
 axis square
 
 %%
