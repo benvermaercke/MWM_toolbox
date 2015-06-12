@@ -4,7 +4,7 @@ clc
 header_script_MWM
 
 plot_it=1;
-%saveIt=1;
+saveIt=1;
 TH_it=0;
 TH=2.7;
 
@@ -12,15 +12,15 @@ max_clim=10;
 
 rescaleFactor=6; % improves the resolution of the resulting eps image
 
-nAnimals_max=10;
+nAnimals_max=2;
 for iAnimal=1:nAnimals_max
     databaseName_use=sprintf([databaseName '_M%03d'],iAnimal);
     
     try
-    loadName=fullfile(data_folder,'dataSets',databaseName_use);
-catch
-    loadName=fullfile(data_folder,'dataSets_17parameters',databaseName_use);
-end
+        loadName=fullfile(data_folder,'dataSets',databaseName_use);
+    catch
+        loadName=fullfile(data_folder,'dataSets_17parameters',databaseName_use);
+    end
     load(loadName,'Heatplots','TrackInfo','demographics','arenaCoords')
     
     folders=demographics(:,1);
@@ -79,16 +79,22 @@ end
                     im=imshow(heatplot_show,[]);
                 end
                 
-                set(im,'AlphaData',imresize(mask,rescaleFactor,'nearest'))
+                %set(im,'AlphaData',imresize(mask,rescaleFactor,'nearest'))
                 set(gca,'CLim',[0 max_clim])
                 hold on
                 
-                plot(coords([2 2])*rescaleFactor,coords([1 3])*rescaleFactor,'k-','lineWidth',line_width)
-                plot(coords([2 4])*rescaleFactor,coords([1 1])*rescaleFactor,'k-','lineWidth',line_width)
-                plot(coords([2 4])*rescaleFactor,coords([3 3])*rescaleFactor,'k-','lineWidth',line_width)
-                plot(coords([4 4])*rescaleFactor,coords([1 3])*rescaleFactor,'k-','lineWidth',line_width)
-                hold off
-                
+                switch MWMtype
+                    case 1
+                    case 2
+                    case 3
+                        plot(coords([2 2])*rescaleFactor,coords([1 3])*rescaleFactor,'k-','lineWidth',line_width)
+                        plot(coords([2 4])*rescaleFactor,coords([1 1])*rescaleFactor,'k-','lineWidth',line_width)
+                        plot(coords([2 4])*rescaleFactor,coords([3 3])*rescaleFactor,'k-','lineWidth',line_width)
+                        plot(coords([4 4])*rescaleFactor,coords([1 3])*rescaleFactor,'k-','lineWidth',line_width)
+                        hold off
+                    case 4
+                        
+                end
                 significant_pixels=mean(heatplot_norm(:)>TH)*100;
                 
                 title_str=sprintf([folder_name_disp ' (N=%d, sign=%3.2f%%)'],[nTracks significant_pixels]);
@@ -97,7 +103,7 @@ end
                 
                 
                 set(T,'FontName','Courier New','fontSize',6)
-                axis([coords(1) coords(3) coords(2) coords(4)]*rescaleFactor)
+                %axis([coords(1) coords(3) coords(2) coords(4)]*rescaleFactor)
                 
                 colormap jet%parula
                 drawnow
