@@ -80,6 +80,9 @@ for iFolder=1:nFolders
                     axis equal
                 end
             end
+            
+            %%% BV20150608 track other variables than std, maybe max of
+            %%% 90%tile
             HP_random=makeHeatplot(tracks_random,kernel_size,arenaCoords.im_size,[1 0]);
             MU_vector(iPerm)=mean(HP_random(:));
             SIGMA_vector(iPerm)=std(HP_random(:));                        
