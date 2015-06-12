@@ -6,7 +6,7 @@ header_script_MWM
 plotIt=1;
 %saveIt=1;
 
-im_size=[200 200];
+%im_size=[200 200];
 
 try
     loadName=fullfile(data_folder,'dataSets',databaseName);
@@ -47,6 +47,7 @@ switch 3
         centerX=ellipse_t.X0_in;%+min(X);
         centerY=ellipse_t.Y0_in;%+min(Y);
     case 4
+        %%
         H=makeHeatplot([X Y],15,im_size,[1 0]);
         TH=prctile(H(:),65);
         H_TH=H>TH;
@@ -130,7 +131,7 @@ end
 targetCoords=struct;
 for iClust=1:nClust
     sel=mapping==iClust;
-    switch 2
+    switch 1
         case 1
             targetCoords.coords(iClust).center=median(endCoords(sel,3:4));
             targetCoords.coords(iClust).radius=mean([mean(endCoords(sel,3:4))-prctile(endCoords(sel,3:4),1) prctile(endCoords(sel,3:4),99)-mean(endCoords(sel,3:4))]);
