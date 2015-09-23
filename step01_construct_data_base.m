@@ -26,10 +26,11 @@ dataset.read_data()
 %% Select folder levels to use for grouping
 % dataset.select_folderLevels()
 
-%% Add ground truth, from file or manual
+%% Add ground truth, from file or manual, if needed
+% just do analysis
 
 %% Add arena coordinates, if known
-
+% else, they will be extracted from the data =less precise
 
 %% Save data to file
 dataset.save_data()
