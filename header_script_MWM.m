@@ -2,11 +2,14 @@
 path_dir=fileparts(mfilename('fullpath'));
 addpath(genpath(path_dir))
 
-%folder_name='Disconnection SearchStrategies';
-folder_name='tau85_ymaze';
 if ispc
-    data_folder='E:\LeuvenData\Developement\MWMtoolbox\rawFiles\ACL_Reversal_acquisition_track';
+    %data_folder='E:\LeuvenData\Developement\MWMtoolbox\rawFiles\ACL_Reversal_acquisition_track';
+    data_folder='C:\Users\u0056003\Documents\MWM_tracks_Iris\Track data_CT_stress';
 else
+    %folder_name='Disconnection SearchStrategies';
+    %folder_name='tau85_ymaze';
+    folder_name=''
+
     if ismac
         %data_root='/Users/benvermaercke/Dropbox (Personal)';
         data_root='/Users/benvermaercke/Dropbox (coxlab)';
@@ -31,12 +34,16 @@ end
 if isdir(data_folder)
     
     %%% Construct databse name
-    A=strsplit(data_folder,filesep);
+    if ispc
+        A=strsplit(filesep,data_folder);
+    else
+        A=strsplit(data_folder,filesep);
+    end
     databaseName=A{end};
     databaseName(databaseName==' ')='_';
     
     saveIt=1;
-    MWMtype=4; % 1: old MWM | 2: new MWM | 3: open field | 4: y-maze
+    MWMtype=2; % 1: old MWM | 2: new MWM | 3: open field | 4: y-maze
     switch MWMtype
         case 1
             data_cols=[2 3]; % Leuven
