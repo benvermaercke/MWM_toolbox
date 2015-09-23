@@ -323,8 +323,7 @@ classdef trajectory_class < handle
                 self.track_data(self.nTracks).file_name=self.file_data(iTrack).file_name;
                 self.track_data(self.nTracks).headers=self.file_data(iTrack).headers;
                 self.track_data(self.nTracks).raw_data=self.file_data(iTrack).raw_data;
-            end
-            self.track_data
+            end            
         end
         
         function reset_track_data(varargin)
