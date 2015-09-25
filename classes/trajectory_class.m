@@ -297,8 +297,13 @@ classdef trajectory_class < handle
             raw_data=struct;
             for iRD=nHeaderLines+1:nLines
                 for iCN=selected_cols(:)'
-                    cell_data=txt_data(iRD).parts{iCN};
-                    raw_data(iRD).(col_names{iCN})=str2double(cell_data);
+                    try
+                        cell_data=txt_data(iRD).parts{iCN};
+                        raw_data(iRD).(col_names{iCN})=str2double(cell_data);
+                    catch
+                        txt_data.line
+                        disp('no data')
+                    end
                 end
             end
             
