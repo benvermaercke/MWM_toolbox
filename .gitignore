@@ -7,4 +7,6 @@
 *.log
 
 files/
-+models/
++models
+
+.DS_Store
