@@ -781,7 +781,10 @@ classdef trajectory_class < handle
         
         function save_config_cb(self,varargin)
             load_config_dir=fullfile(self.root_folder,self.config_folder_name);
-            fname=uiputfile(load_config_dir,'.mat');
+            fname=uiputfile(fullfile(load_config_dir,'*.mat'));
+            if fname==0
+                return
+            end
             self.save_config(fname)
         end
         
