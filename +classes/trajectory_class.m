@@ -40,23 +40,25 @@ classdef trajectory_class < handle
         
         
         % classification
-        SVM_matrix=[];
-        track_classification_vector=[];
+        SVMmodels
+        SVM_matrix
+        track_classification_vector
+        track_classification_vector_probe
     end
     
     methods
         function self=trajectory_class(varargin)
             % load or init config
-            if ~self.load_config() 
-               self.init_config()
+            if ~self.load_config()
+                self.init_config()
             end
         end
         
         function res=load_config(self,varargin)
-            if nargin>=2&&~isempty(varargin{1})    
+            if nargin>=2&&~isempty(varargin{1})
                 fname=varargin{1};
             else
-                fname='default.mat';
+                fname='latest.mat';
             end
             load_config_name=fullfile(self.root_folder,self.config_folder_name,fname);
             
@@ -78,6 +80,7 @@ classdef trajectory_class < handle
             end
             save_config_name=fullfile(self.root_folder,self.config_folder_name,fname);
             config=self.config;
+            tools.savec(save_config_name)
             save(save_config_name,'config')
             fprintf('Saved current config to %s \n',save_config_name)
         end
@@ -133,7 +136,7 @@ classdef trajectory_class < handle
                 self.raw_folder=data_folder;
                 self.database_name=self.check_str(name);
             else % select folder manually
-                data_folder=uigetdir();
+                data_folder=uigetdir()
                 if ~data_folder==0
                     self.raw_folder=data_folder;
                     self.database_name=self.check_str(data_folder);
@@ -152,7 +155,7 @@ classdef trajectory_class < handle
                 %error(['File ' saveName ' exists...'])
                 %self.import_data()
             else
-                savec(saveName)
+                tools.savec(saveName)
             end
         end
         
@@ -282,7 +285,7 @@ classdef trajectory_class < handle
             if ~self.import_data()
                 self.reset_track_data()
                 
-                t0=clock;
+                %t0=clock;
                 tmp=self.GUI.load_bt.String;
                 for iFile=1:self.nFiles
                     %load_name=fullfile(self.raw_folder,self.file_names(iFile).name)
@@ -290,7 +293,8 @@ classdef trajectory_class < handle
                     switch self.file_type
                         case 1
                             %disp('*.xlsx not implemented...')
-                            self.read_xlsx_data(load_name)
+                            %self.read_xlsx_data(load_name)
+                            self.read_xlsx_data_basic(load_name)
                         case 2
                             disp('*.xls not implemented...')
                             self.read_xls_data(load_name)
@@ -327,17 +331,24 @@ classdef trajectory_class < handle
         end
         
         function export_data(self,varargin)
-            
             save(self.database_path_abs,'')
         end
         
-        function read_xls_data(self,varargin)
+        function read_xlsx_data_basic(self,varargin)
+            tic
             track_name=varargin{1};
-            [A,B,raw]=xlsread(filename,1,'A:AD','basic')
+            D=xlsread(track_name,1,'A:D','basic');
+            self.file_data.raw_data.Trial_time=D(:,1);
+            self.file_data.raw_data.Recording_time=D(:,2);
+            self.file_data.raw_data.X_center=D(:,3);
+            self.file_data.raw_data.Y_center=D(:,4);
+            toc
         end
         
         function read_xlsx_data(self,varargin)
-            %self
+            % install POI_library
+            tools.initXLSreader
+            
             track_name=varargin{1};
             [dataMatrix_sheets, trackInfo_sheets]=tools.readXLSdata(track_name,self.col_names_selection);
             
@@ -492,7 +503,7 @@ classdef trajectory_class < handle
                 for iFN=1:length(fieldNames)
                     A=self.track_data(iFile).raw_data.(fieldNames{iFN});
                     if any(isnan(A))
-                        self.track_data(iFile).raw_data.(fieldNames{iFN})=fillTheGaps2(A);
+                        self.track_data(iFile).raw_data.(fieldNames{iFN})=tools.fillTheGaps2(A);
                         corrected_files(iFile)=1;
                     end
                 end
@@ -544,14 +555,18 @@ classdef trajectory_class < handle
                 T=track_temp.resampled_data(:,1);
                 
                 sel=T<track_temp.LatencyFirstCrossing;
-                self.track_data(iTrack).resampled_data=track_temp.resampled_data(sel,:);
+                self.track_data(iTrack).resampled_data_probe=track_temp.resampled_data(sel,:);
             end
         end
         
         function extract_parameters(self,varargin)
             %Prior=self.PriorKnowledge;
             for iTrack=1:self.nFiles
-                data=self.track_data(iTrack).resampled_data;
+                if self.config.Probe_trial==0
+                    data=self.track_data(iTrack).resampled_data;
+                else
+                    data=self.track_data(iTrack).resampled_data_probe;
+                end
                 
                 %platFormCoords_thisTrack.current=Prior.Target.center;
                 %platFormCoords_thisTrack.targetZoneRadius=Prior.Target.radius*2.5;
@@ -569,14 +584,23 @@ classdef trajectory_class < handle
         
         function classify_track(self,varargin)
             tic
-            nIter=200;
-            modelName=['models/SVMclassifierMWMdata_nIter_' num2str(nIter) '_oldModel.mat'];
-            load(modelName,'SVMmodels','perfMatrix','classificationStrings','COMP','nComp','class_vector')
-            disp('Loaded big model file...')
-            toc
+            if isempty(self.SVMmodels)
+                nIter=200;
+                disp('Loading big model file...')
+                modelName=['models/SVMclassifierMWMdata_nIter_' num2str(nIter) '_oldModel.mat'];
+                %load(modelName,'SVMmodels','perfMatrix','classificationStrings','COMP','nComp','class_vector')
+                S=load(modelName,'SVMmodels');
+                self.SVMmodels=S.SVMmodels;
+                toc
+            end
             
             %%% do classification
-            self.track_classification_vector=core.getModelResponse_oldApproach(SVMmodels,self.SVM_matrix);
+            track_classification=core.getModelResponse_oldApproach(self.SVMmodels,self.SVM_matrix);
+            if self.config.Probe_trial==0
+                self.track_classification_vector=track_classification;
+            else
+                self.track_classification_vector_probe=track_classification;
+            end
         end
         
         function save_data(self,varargin)
@@ -586,11 +610,23 @@ classdef trajectory_class < handle
         end
         
         function create_output(self,varargin)
-            save_name=fullfile(self.root_folder,'files','output',sprintf('%s.txt',self.database_name))
+            if self.config.Probe_trial==0
+                save_name=fullfile(self.root_folder,'files','output',sprintf('%s.txt',self.database_name))
+            else
+                save_name=fullfile(self.root_folder,'files','output',sprintf('%s_probe.txt',self.database_name))
+            end
+            savec(save_name)
             fid=fopen(save_name,'w');
             for iTrack=1:self.nFiles
-                latency=max(self.track_data(iTrack).resampled_data(:,1));
-                fprintf(fid,'%s ; %3.2f ;  %d \n',self.file_names(iTrack).name,latency,self.track_classification_vector(iTrack));
+                 if self.config.Probe_trial==0
+                    data=self.track_data(iTrack).resampled_data;
+                    track_classification=self.track_classification_vector;
+                else
+                    data=self.track_data(iTrack).resampled_data_probe;
+                    track_classification=self.track_classification_vector_probe;
+                end
+                latency=range(data(:,1));
+                fprintf(fid,'%s ; %3.2f ;  %d \n',self.file_names(iTrack).name,latency,track_classification(iTrack));
             end
             fclose(fid);
         end
@@ -602,29 +638,49 @@ classdef trajectory_class < handle
                 track_nr=1;
             end
             
-            prior=self.PriorKnowledge;
-            Pool=prior.Pool;
-            Target=prior.Target;
-            data=self.track_data(track_nr).resampled_data;
-            
-            clf
-            hold on
-            plot(Pool.center(1),Pool.center(2),'ko')
-            circle(Pool.center,Pool.radius,100,'k-',3);
-            circle(Target.center,Target.radius,100,'r-',2);
-            plot(data(:,2),data(:,3),'b-')
-            
-            hold off
-            axis square
-            
-            nIter=200;
-            modelName=['models/SVMclassifierMWMdata_nIter_' num2str(nIter) '_oldModel.mat'];
-            load(modelName,'classificationStrings')
-            if track_nr==1
-                classificationStrings
+            if self.config.Probe_trial==0
+                %data=cat(1,self.track_data(track_nr).resampled_data,[NaN NaN NaN]);
+                track_classification=self.track_classification_vector;
+                platform_line_style='-';
+            else
+                %data=cat(1,self.track_data(track_nr).resampled_data_probe,[NaN NaN NaN]);
+                track_classification=self.track_classification_vector_probe;
+                platform_line_style='-';
             end
             
-            title(classificationStrings(self.track_classification_vector(track_nr)))
+            cla
+            hold on
+            plot(self.config.pool_center_x,self.config.pool_center_y,'ko')
+            tools.circle([self.config.pool_center_x self.config.pool_center_y],self.config.pool_radius,100,'k-',3);
+            tools.circle([self.config.platform_center_x self.config.platform_center_y],self.config.platform_radius,100,['r' platform_line_style],2);
+            
+            for iTrack=1:length(track_nr)
+                idx=track_nr(iTrack);
+                if self.config.Probe_trial==0
+                    data=cat(1,self.track_data(idx).resampled_data);
+                    plot(data(:,2),data(:,3),'b-')
+                else
+                    data=cat(1,self.track_data(idx).resampled_data_probe);
+                    data_post=cat(1,self.track_data(idx).resampled_data);
+                    plot(data_post(:,2),data_post(:,3),'r:')
+                    plot(data(:,2),data(:,3),'b-')
+                end
+            end
+            
+            
+            hold off
+            axis equal tight
+            
+            if length(track_nr)==1
+                nIter=200;
+                modelName=['models/SVMclassifierMWMdata_nIter_' num2str(nIter) '_oldModel.mat'];
+                load(modelName,'classificationStrings')
+                if track_nr==1
+                    classificationStrings
+                end
+                title(classificationStrings(track_classification(track_nr)))
+                xlabel(sprintf('Latency %.1f sec',range(data(:,1))))
+            end
         end
         
         
@@ -632,6 +688,8 @@ classdef trajectory_class < handle
             str=varargin{2};
             
             % make names valid
+            str=strrep(str,':','-');
+            str=strrep(str,filesep,'-');
             str=strrep(str,' ','_');
             str=strrep(str,'(','_');
             str=strrep(str,')','');
@@ -705,7 +763,7 @@ classdef trajectory_class < handle
         
         function save_config_cb(self,varargin)
             load_config_dir=fullfile(self.root_folder,self.config_folder_name);
-            fname=uiputfile(load_config_dir);
+            fname=uiputfile(load_config_dir,'.mat');
             self.save_config(fname)
         end
         
@@ -713,7 +771,7 @@ classdef trajectory_class < handle
         function load_data_cb(self,varargin)
             self.save_config('latest.mat') % store current config
             self.file_scanner()
-            self.file_parser
+            self.file_parser()
             self.sample_data(1)
             self.set_cols2read(1:4)
             self.read_data()

@@ -68,7 +68,7 @@ idealLatency=RHO_platform(1)/(velocity*samplingRate); % time needed to get to pl
 newStartpoint=round(idealLatency*samplingRate);
 if newStartpoint>0
     avgMatrix=[round(T(newStartpoint:end)) RHO_platform(newStartpoint:end)];
-    avgDistances=pivotTable(avgMatrix,1,'mean',2);
+    avgDistances=tools.pivotTable(avgMatrix,1,'mean',2);
     cumSearchError=sum(avgDistances);
 else
     cumSearchError=0;

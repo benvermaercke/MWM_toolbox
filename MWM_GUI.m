@@ -10,7 +10,7 @@ clc
 % - config file containing following parameters (xml - json - xlsx - plain - table)
 % - reversal or not : needs two locations
 % - probe trial or not
-% - arena definition file : 
+% - arena definition file :
 %   - pool center XY , radius
 %   - platform 1 center XY , radius
 %   - platform 2 center XY , radius (optional)
@@ -23,27 +23,32 @@ clc
 % - button for exporting data : print file location
 % - need output box
 
-
-%% test code 
-% 
-% filename='/Users/benvermaercke/Downloads/data_Disha/MWM_reversal/ACQ/ACQ/raw-data/Raw data-mwm-rsfmri-long-Trial     2.xlsx';
-% tic
-% sheet_nr=1;
-% sheet_name='Track-Arena 1-Subject 1';
-% [A,B,raw]=xlsread(filename,sheet_nr,'A:E')
-% toc
-% 
-% %%
-% tic
-% [myRaw,headers]=tools.readXLSdata(filename,1:4);
-% toc
-% 
-% %%
-% [status,sheets,xlFormat] = xlsfinfo(filename)
-
 %% initialize class
 dataset=classes.trajectory_class();
 
 %% draw GUI
 dataset.draw_GUI()
+
+
+if 0
+    %% Compare strategy classification until first platform crossing vs. full trial
+    figure(2);
+    track_nr=1;
+    
+    dataset.config.Probe_trial=1;
+    subplot(121)
+    dataset.plot_track(track_nr)
+    
+    dataset.config.Probe_trial=0;
+    subplot(122)
+    dataset.plot_track(track_nr)
+end
+
+
+if 0
+    %% plot track data
+    figure(3)
+    clf
+    dataset.plot_track(14) 
+end
 

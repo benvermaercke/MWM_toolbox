@@ -3,7 +3,7 @@ function decision = getModelResponse_oldApproach(SVMmodel,SVMmatrix)
 nClasses=9;
 
 nTest=size(SVMmatrix,1);
-pairs=possibleComparisons2(nClasses);
+pairs=tools.possibleComparisons2(nClasses);
 nPairs=size(pairs,1);
 nIter=size(SVMmodel,3);
 
