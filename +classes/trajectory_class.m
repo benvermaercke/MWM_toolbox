@@ -125,8 +125,8 @@ classdef trajectory_class < handle
         function set_folder(self,varargin)
             if nargin>=2&&~isempty(varargin{1})
                 data_folder=varargin{1};
-                A=strsplit(filesep,data_folder);
-                B=strsplit(data_folder,filesep);
+                A=tools.strsplit(filesep,data_folder);
+                B=tools.strsplit(data_folder,filesep);
                 %%% solve issue where strsplit has changed in which
                 %%% argument comes first
                 if length(A)>length(B)
@@ -137,7 +137,7 @@ classdef trajectory_class < handle
                 self.raw_folder=data_folder;
                 self.database_name=self.check_str(name);
             else % select folder manually
-                data_folder=uigetdir()
+                data_folder=uigetdir();
                 if ~data_folder==0
                     self.raw_folder=data_folder;
                     self.database_name=self.check_str(data_folder);
@@ -387,7 +387,7 @@ classdef trajectory_class < handle
             while ischar(tline)
                 % process line
                 line=strrep(tline,'"','');line=strrep(line,':','');
-                parts=strsplit(';',line);
+                parts=tools.strsplit(';',line);
                 
                 nLines=nLines+1;
                 txt_data(nLines).line=tline;
@@ -404,7 +404,7 @@ classdef trajectory_class < handle
             else
                 nHeaderLines=find(cat(1,txt_data.numeric)==1,1,'first')-1;
             end
-            if ~between(nHeaderLines,[1 nLines])
+            if ~tools.between(nHeaderLines,[1 nLines])
                 error('invalid number of headerlines')
             end
             
@@ -624,10 +624,10 @@ classdef trajectory_class < handle
             else
                 save_name=fullfile(self.root_folder,'files','output',sprintf('%s_probe.txt',self.database_name))
             end
-            savec(save_name)
+            tools.savec(save_name)
             fid=fopen(save_name,'w');
             for iTrack=1:self.nFiles
-                 if self.config.Probe_trial==0
+                if self.config.Probe_trial==0
                     data=self.track_data(iTrack).resampled_data;
                     track_classification=self.track_classification_vector;
                 else
@@ -647,48 +647,57 @@ classdef trajectory_class < handle
                 track_nr=1;
             end
             
-            if self.config.Probe_trial==0
+            if tools.between(track_nr,[1 self.nFiles+1])
+                if self.config.Probe_trial==0
                 %data=cat(1,self.track_data(track_nr).resampled_data,[NaN NaN NaN]);
                 track_classification=self.track_classification_vector;
                 platform_line_style='-';
-            else
-                %data=cat(1,self.track_data(track_nr).resampled_data_probe,[NaN NaN NaN]);
-                track_classification=self.track_classification_vector_probe;
-                platform_line_style='-';
-            end
-            
-            cla
-            hold on
-            plot(self.config.pool_center_x,self.config.pool_center_y,'ko')
-            tools.circle([self.config.pool_center_x self.config.pool_center_y],self.config.pool_radius,100,'k-',3);
-            tools.circle([self.config.platform_center_x self.config.platform_center_y],self.config.platform_radius+2,100,['r' platform_line_style],2);
-            
-            for iTrack=1:length(track_nr)
-                idx=track_nr(iTrack);
-                if self.config.Probe_trial==0
-                    data=cat(1,self.track_data(idx).resampled_data);
-                    plot(data(:,2),data(:,3),'b-')
                 else
-                    data=cat(1,self.track_data(idx).resampled_data_probe);
-                    data_post=cat(1,self.track_data(idx).resampled_data);
-                    plot(data_post(:,2),data_post(:,3),'r:')
-                    plot(data(:,2),data(:,3),'b-')
+                    %data=cat(1,self.track_data(track_nr).resampled_data_probe,[NaN NaN NaN]);
+                    track_classification=self.track_classification_vector_probe;
+                    platform_line_style='-';
                 end
-            end
-            
-            
-            hold off
-            axis equal tight
-            
-            if length(track_nr)==1
                 
-                modelName=['models/SVMclassifierMWMdata_nIter_' num2str(self.nIter) '_oldModel.mat'];
-                load(modelName,'classificationStrings')
-                if track_nr==1
-                    classificationStrings
+                cla
+                hold on
+                
+                len=self.config.pool_radius+5;
+                plot([self.config.pool_center_x self.config.pool_center_x],[self.config.pool_center_y-len self.config.pool_center_y+len],'k--')
+                plot([self.config.pool_center_x-len self.config.pool_center_x+len],[self.config.pool_center_y self.config.pool_center_y],'k--')
+                
+                %plot(self.config.pool_center_x,self.config.pool_center_y,'r+')
+                
+                
+                tools.circle([self.config.pool_center_x self.config.pool_center_y],self.config.pool_radius,100,'k-',3);
+                tools.circle([self.config.platform_center_x self.config.platform_center_y],self.config.platform_radius+2,100,['r' platform_line_style],2);
+                
+                for iTrack=1:length(track_nr)
+                    idx=track_nr(iTrack);
+                    if self.config.Probe_trial==0
+                        data=cat(1,self.track_data(idx).resampled_data);
+                        plot(data(:,2),data(:,3),'b-')
+                    else
+                        data=cat(1,self.track_data(idx).resampled_data_probe);
+                        data_post=cat(1,self.track_data(idx).resampled_data);
+                        plot(data_post(:,2),data_post(:,3),'r:')
+                        plot(data(:,2),data(:,3),'b-')
+                    end
                 end
-                title(classificationStrings(track_classification(track_nr)))
-                xlabel(sprintf('Latency %.1f sec',range(data(:,1))))
+                
+                
+                hold off
+                axis equal tight
+                
+                if length(track_nr)==1
+                    
+                    modelName=['models/SVMclassifierMWMdata_nIter_' num2str(self.nIter) '_oldModel.mat'];
+                    load(modelName,'classificationStrings')
+                    if track_nr==1
+                        %classificationStrings
+                    end
+                    title(classificationStrings(track_classification(track_nr)))
+                    xlabel(sprintf('Latency %.1f sec',range(data(:,1))))
+                end
             end
         end
         

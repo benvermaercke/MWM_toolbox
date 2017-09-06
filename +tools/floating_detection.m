@@ -41,7 +41,7 @@ if exist(data_file_name,'file')
         nBlocks=ceil(latency/15);
         floating_per_block=NaN(1,nBlocks);
         for iBlock=1:nBlocks
-            sel=between(time_axis(1:end-1),[(iBlock-1)*block_size+1 iBlock*block_size]);
+            sel=tools.between(time_axis(1:end-1),[(iBlock-1)*block_size+1 iBlock*block_size]);
             floating_per_block(iBlock)=mean(velocity_data_cm(sel)<threshold)*100;
         end
         

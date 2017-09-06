@@ -47,8 +47,7 @@ end
 
 if 0
     %% plot track data
-    figure(3)
-    clf
-    dataset.plot_track(3) 
+    %figure(3)
+    dataset.plot_track(1)
 end
 

@@ -97,14 +97,14 @@ timeInTargetZone=mean(RHO_platform<platformCoords.targetZoneRadius)*100;
 % %time in zones around center
 if ~isfield(poolCoords,'annulusRadii')
     timeInOuterWallZone=mean(RHO_center>radius*.85)*100; % >.85
-    timeInCloserWallZone=mean(between(RHO_center,[radius*.64 radius*.85]))*100; % .64-.85
-    timeInTargetAnnulus=mean(between(RHO_center,[radius*.42 radius*.64]))*100; % .42-.64
+    timeInCloserWallZone=mean(tools.between(RHO_center,[radius*.64 radius*.85]))*100; % .64-.85
+    timeInTargetAnnulus=mean(tools.between(RHO_center,[radius*.42 radius*.64]))*100; % .42-.64
     timeInCenterZone=mean(RHO_center<radius*.42)*100; % <.42
 else
     annulusRadii=poolCoords.annulusRadii;
     timeInCenterZone=mean(RHO_center<=annulusRadii(1))*100;
-    timeInTargetAnnulus=mean(between(RHO_center,annulusRadii(1:2)))*100;
-    timeInCloserWallZone=mean(between(RHO_center,annulusRadii(2:3)))*100;
+    timeInTargetAnnulus=mean(tools.between(RHO_center,annulusRadii(1:2)))*100;
+    timeInCloserWallZone=mean(tools.between(RHO_center,annulusRadii(2:3)))*100;
     timeInOuterWallZone=mean(RHO_center>=annulusRadii(3))*100;
 end
 
