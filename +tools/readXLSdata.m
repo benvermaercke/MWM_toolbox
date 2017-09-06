@@ -7,7 +7,7 @@ end
 if nargin>=2 && ~isempty(varargin{2})
     cols_req=varargin{2};
 else
-    cols_req=inf;
+    cols_req=1:4;
 end
 
 nCols_req=length(cols_req);
@@ -108,6 +108,7 @@ else
                         parameter=strrep(parameter,'<','');
                         parameter=strrep(parameter,'>','');
                         parameter=strrep(parameter,':','');
+                        parameter=strrep(parameter,'#','nr');
                         TrackInfo(iSheet).(parameter)=value;
                     end
                 case 2 % fieldnames

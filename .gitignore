@@ -6,7 +6,4 @@
 *.asv
 *.log
 
-files/
-+models
-
 .DS_Store

@@ -93,7 +93,7 @@ if isempty(wildpath),
 elseif strcmp(wildpath,'**'), % a double wild directory means recurs down into sub directories
 
   % first look for files in the current directory (remove extra filesep)
-  D = rdir([prepath postpath(2:end)]);
+  D = tools.rdir([prepath postpath(2:end)]);
 
   % then look for sub directories
   Dt = dir(''); 
@@ -101,7 +101,7 @@ elseif strcmp(wildpath,'**'), % a double wild directory means recurs down into s
   % process each directory
   for ii = 1:length(tmp),
     if (tmp(ii).isdir && ~strcmpi(tmp(ii).name,'.') && ~strcmpi(tmp(ii).name,'..') ),
-      Dt = [Dt; rdir([prepath tmp(ii).name filesep wildpath postpath])];
+      Dt = [Dt; tools.rdir([prepath tmp(ii).name filesep wildpath postpath])];
     end;
   end;
   D = [D; Dt];
@@ -113,7 +113,7 @@ else
   % process each directory found
   for ii = 1:length(tmp),
     if (tmp(ii).isdir && ~strcmpi(tmp(ii).name,'.') && ~strcmpi(tmp(ii).name,'..') ),
-      D = [D; rdir([prepath tmp(ii).name postpath])];
+      D = [D; tools.rdir([prepath tmp(ii).name postpath])];
     end;
   end;
 end;

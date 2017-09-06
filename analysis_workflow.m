@@ -5,7 +5,7 @@ header_script_MWM
 
 %%% Instantiate database class based on data_folder, which can come from
 %%% uitgetfolder
-dataset=trajectory_class();
+dataset=classes.trajectory_class();
 stop
 
 %% set 
@@ -19,7 +19,7 @@ dataset.file_parser()
 dataset.sample_data(3)
 
 %% Select columns to read, can be GUI
-dataset.set_cols2read(1,4)
+dataset.set_cols2read(1,1:4)
 
 %% Read in the data, given filter defined above
 dataset.read_data()
