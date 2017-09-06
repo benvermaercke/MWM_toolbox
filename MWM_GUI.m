@@ -27,6 +27,8 @@ clc
 dataset=classes.trajectory_class();
 
 %% draw GUI
+figure(1)
+clf
 dataset.draw_GUI()
 
 if 0
@@ -35,25 +37,9 @@ if 0
     fList'
 end
 
-
-if 0
-    %% Compare strategy classification until first platform crossing vs. full trial
-    figure(2);
-    track_nr=52;
-    
-    dataset.config.Probe_trial=1;
-    subplot(121)
-    dataset.plot_track(track_nr)
-    
-    dataset.config.Probe_trial=0;
-    subplot(122)
-    dataset.plot_track(track_nr)
-end
-
-
 if 0
     %% plot track data
-    %figure(3)
+    figure(3)
     dataset.plot_track(1)
 end
 

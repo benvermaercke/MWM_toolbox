@@ -294,8 +294,11 @@ classdef trajectory_class < handle
                     switch self.file_type
                         case 1
                             %disp('*.xlsx not implemented...')
-                            %self.read_xlsx_data(load_name)
-                            self.read_xlsx_data_basic(load_name)
+                            if ispc % do basic xls read
+                                self.read_xlsx_data_basic(load_name)
+                            else
+                                self.read_xlsx_data(load_name)
+                            end
                         case 2
                             disp('*.xls not implemented...')
                             self.read_xls_data(load_name)
@@ -649,9 +652,9 @@ classdef trajectory_class < handle
             
             if tools.between(track_nr,[1 self.nFiles+1])
                 if self.config.Probe_trial==0
-                %data=cat(1,self.track_data(track_nr).resampled_data,[NaN NaN NaN]);
-                track_classification=self.track_classification_vector;
-                platform_line_style='-';
+                    %data=cat(1,self.track_data(track_nr).resampled_data,[NaN NaN NaN]);
+                    track_classification=self.track_classification_vector;
+                    platform_line_style='-';
                 else
                     %data=cat(1,self.track_data(track_nr).resampled_data_probe,[NaN NaN NaN]);
                     track_classification=self.track_classification_vector_probe;
@@ -689,7 +692,6 @@ classdef trajectory_class < handle
                 axis equal tight
                 
                 if length(track_nr)==1
-                    
                     modelName=['models/SVMclassifierMWMdata_nIter_' num2str(self.nIter) '_oldModel.mat'];
                     load(modelName,'classificationStrings')
                     if track_nr==1
