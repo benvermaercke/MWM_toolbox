@@ -29,6 +29,12 @@ dataset=classes.trajectory_class();
 %% draw GUI
 dataset.draw_GUI()
 
+if 0
+    %% dependency report
+    [fList,pList] = matlab.codetools.requiredFilesAndProducts('MWM_GUI.m');
+    fList'
+end
+
 
 if 0
     %% Compare strategy classification until first platform crossing vs. full trial
