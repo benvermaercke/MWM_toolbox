@@ -42,6 +42,7 @@ classdef trajectory_class < handle
         % classification
         nIter=200;
         SVMmodels
+        classificationStrings
         SVM_matrix
         track_classification_vector
         track_classification_vector_probe
@@ -600,8 +601,9 @@ classdef trajectory_class < handle
                 disp('Loading big model file...')
                 modelName=['models/SVMclassifierMWMdata_nIter_' num2str(self.nIter) '_oldModel.mat'];
                 %load(modelName,'SVMmodels','perfMatrix','classificationStrings','COMP','nComp','class_vector')
-                S=load(modelName,'SVMmodels');
+                S=load(modelName,'SVMmodels','classificationStrings');
                 self.SVMmodels=S.SVMmodels;
+                self.classificationStrings=S.classificationStrings;
                 toc
             end
             
@@ -692,12 +694,10 @@ classdef trajectory_class < handle
                 axis equal tight
                 
                 if length(track_nr)==1
-                    modelName=['models/SVMclassifierMWMdata_nIter_' num2str(self.nIter) '_oldModel.mat'];
-                    load(modelName,'classificationStrings')
                     if track_nr==1
-                        %classificationStrings
+                        self.classificationStrings
                     end
-                    title(classificationStrings(track_classification(track_nr)))
+                    title(self.classificationStrings(track_classification(track_nr)))
                     xlabel(sprintf('Latency %.1f sec',range(data(:,1))))
                 end
             end
