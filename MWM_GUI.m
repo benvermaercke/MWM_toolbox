@@ -33,7 +33,7 @@ dataset.draw_GUI()
 if 0
     %% Compare strategy classification until first platform crossing vs. full trial
     figure(2);
-    track_nr=1;
+    track_nr=52;
     
     dataset.config.Probe_trial=1;
     subplot(121)
@@ -49,6 +49,6 @@ if 0
     %% plot track data
     figure(3)
     clf
-    dataset.plot_track(14) 
+    dataset.plot_track(3) 
 end
 

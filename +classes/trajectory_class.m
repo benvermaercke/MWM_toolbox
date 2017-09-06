@@ -40,6 +40,7 @@ classdef trajectory_class < handle
         
         
         % classification
+        nIter=200;
         SVMmodels
         SVM_matrix
         track_classification_vector
@@ -320,10 +321,10 @@ classdef trajectory_class < handle
         function res=import_data(self,varargin)
             self.database_path_abs
             if exist(self.database_path_abs,'file')==2
-                S=load(self.database_path_abs);
-                self.nTracks=S.dataset.nTracks;
-                self.track_data=S.dataset.track_data;
-                self.col_names_selection=S.dataset.col_names_selection;
+                S=load(self.database_path_abs,'nTracks','track_data','col_names_selection');
+                self.nTracks=S.nTracks;
+                self.track_data=S.track_data;
+                self.col_names_selection=S.col_names_selection;
                 res=1;
             else
                 res=0;
@@ -331,18 +332,26 @@ classdef trajectory_class < handle
         end
         
         function export_data(self,varargin)
-            save(self.database_path_abs,'')
+            if nargin>=2&&~isempty(varargin{1})
+                save_name=varargin{1};
+            else
+                save_name=self.database_path_abs;
+            end
+            nTracks=self.nTracks;
+            track_data=self.track_data;
+            col_names_selection=self.col_names_selection;
+            save(save_name,'nTracks','track_data','col_names_selection')
         end
         
         function read_xlsx_data_basic(self,varargin)
-            tic
+            %tic
             track_name=varargin{1};
             D=xlsread(track_name,1,'A:D','basic');
             self.file_data.raw_data.Trial_time=D(:,1);
             self.file_data.raw_data.Recording_time=D(:,2);
             self.file_data.raw_data.X_center=D(:,3);
             self.file_data.raw_data.Y_center=D(:,4);
-            toc
+            %toc
         end
         
         function read_xlsx_data(self,varargin)
@@ -585,9 +594,8 @@ classdef trajectory_class < handle
         function classify_track(self,varargin)
             tic
             if isempty(self.SVMmodels)
-                nIter=200;
                 disp('Loading big model file...')
-                modelName=['models/SVMclassifierMWMdata_nIter_' num2str(nIter) '_oldModel.mat'];
+                modelName=['models/SVMclassifierMWMdata_nIter_' num2str(self.nIter) '_oldModel.mat'];
                 %load(modelName,'SVMmodels','perfMatrix','classificationStrings','COMP','nComp','class_vector')
                 S=load(modelName,'SVMmodels');
                 self.SVMmodels=S.SVMmodels;
@@ -604,9 +612,10 @@ classdef trajectory_class < handle
         end
         
         function save_data(self,varargin)
-            dataset=self;
+            %dataset=self;
             self.database_path_abs
-            save(self.database_path_abs,'dataset')
+            self.export_data(self.database_path_abs)
+            %save(self.database_path_abs,'dataset')
         end
         
         function create_output(self,varargin)
@@ -652,7 +661,7 @@ classdef trajectory_class < handle
             hold on
             plot(self.config.pool_center_x,self.config.pool_center_y,'ko')
             tools.circle([self.config.pool_center_x self.config.pool_center_y],self.config.pool_radius,100,'k-',3);
-            tools.circle([self.config.platform_center_x self.config.platform_center_y],self.config.platform_radius,100,['r' platform_line_style],2);
+            tools.circle([self.config.platform_center_x self.config.platform_center_y],self.config.platform_radius+2,100,['r' platform_line_style],2);
             
             for iTrack=1:length(track_nr)
                 idx=track_nr(iTrack);
@@ -672,8 +681,8 @@ classdef trajectory_class < handle
             axis equal tight
             
             if length(track_nr)==1
-                nIter=200;
-                modelName=['models/SVMclassifierMWMdata_nIter_' num2str(nIter) '_oldModel.mat'];
+                
+                modelName=['models/SVMclassifierMWMdata_nIter_' num2str(self.nIter) '_oldModel.mat'];
                 load(modelName,'classificationStrings')
                 if track_nr==1
                     classificationStrings

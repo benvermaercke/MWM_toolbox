@@ -1,4 +1,5 @@
 *.m~
+*.txt
 *.png
 *.eps
 *.zip
@@ -6,7 +7,8 @@
 *.asv
 *.log
 *.xlsx
+*~*.xlsx
 
-files/
+!+models/SVMclassifierMWMdata_nIter_200_oldModel.mat
 
 .DS_Store
