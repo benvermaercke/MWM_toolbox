@@ -38,7 +38,14 @@ if 0
 end
 
 if 0
-    %% plot track data
+    %% plot data from many tracks - e.g. before running Process data
+    figure(2)
+    %%
+    dataset.plot_track(1:20)
+end
+
+if 0
+    %% plot individual track data with classification
     figure(3)
     %%
     dataset.plot_track(1)
