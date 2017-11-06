@@ -25,6 +25,7 @@ classdef trajectory_class < handle
         % after sample read
         file_data=struct('file_name','','headers',struct,'raw_data',[]); % temp file data
         
+        POI_is_loaded=false;
         % define filters
         col_names_selection=[];
         nData_cols=[];
@@ -360,7 +361,10 @@ classdef trajectory_class < handle
         
         function read_xlsx_data(self,varargin)
             % install POI_library
-            tools.initXLSreader
+            if ~self.POI_is_loaded
+                tools.initXLSreader
+                self.POI_is_loaded=true;
+            end
             
             track_name=varargin{1};
             [dataMatrix_sheets, trackInfo_sheets]=tools.readXLSdata(track_name,self.col_names_selection);
@@ -537,9 +541,11 @@ classdef trajectory_class < handle
                     
                     X_resampled=resample(data_exp,self.target_sampling_rate,self.sample_rate);
                     data_cut=X_resampled(self.add_extra_points*self.target_sampling_rate/self.sample_rate:end-self.add_extra_points*self.target_sampling_rate/self.sample_rate,:);
-                    new_sample_rate=round(1/mean(diff(data_cut(:,1))));
+                    new_sample_rate=round(1/median(diff(data_cut(:,1))));
                     if new_sample_rate==self.target_sampling_rate
                         self.track_data(iFile).resampled_data=data_cut;
+                    else
+                        error('Non matching sampling rates')
                     end
                 end
                 fprintf('Resampled frame rate from %dHz to %dHz. \n',[self.sample_rate new_sample_rate])
@@ -575,6 +581,7 @@ classdef trajectory_class < handle
         function extract_parameters(self,varargin)
             %Prior=self.PriorKnowledge;
             for iTrack=1:self.nFiles
+                iTrack
                 if self.config.Probe_trial==0
                     data=self.track_data(iTrack).resampled_data;
                 else
