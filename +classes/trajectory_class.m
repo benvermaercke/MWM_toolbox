@@ -1,6 +1,7 @@
 classdef trajectory_class < handle
     properties
         GUI=struct;
+        chat_box % for output
         config
         
         raw_folder='';
@@ -68,9 +69,10 @@ classdef trajectory_class < handle
             if exist(load_config_name,'file')==2
                 S=load(load_config_name,'config');
                 self.config=S.config;
+                self.print(sprintf('Loaded %s',load_config_name))
                 res=1;
             else
-                disp('File not found...')
+                self.print('File not found...')
                 res=0;
             end
         end
@@ -85,7 +87,7 @@ classdef trajectory_class < handle
             config=self.config;
             tools.savec(save_config_name)
             save(save_config_name,'config')
-            fprintf('Saved current config to %s \n',save_config_name)
+            self.print(sprintf('Saved current config to %s',save_config_name))
         end
         
         function init_config(self,varargin)
@@ -118,10 +120,40 @@ classdef trajectory_class < handle
             % command buttons
             self.GUI.load_bt=uicontrol('Style','PushButton','String','Load data','Units','Normalized','Position',[.65 .7 .2 .05],'callback',@self.load_data_cb);
             self.GUI.process_bt=uicontrol('Style','PushButton','String','Process data','Units','Normalized','Position',[.65 .60 .2 .05],'callback',@self.process_data_cb);
+            self.GUI.open_res=uicontrol('Style','PushButton','String','Open results','Units','Normalized','Position',[.65 .50 .2 .05],'callback',@self.open_result);
             
+            
+            % show output box
+            self.chat_box=uicontrol('Style','edit','Units','Normalized','Position',[.1 .05 .8 .15],'Max',2,'HorizontalAlignment','left');
+            self.GUI.process_bt=uicontrol('Style','PushButton','String','Clear log','Units','Normalized','Position',[.65 .20 .2 .05],'callback',@self.clear_box);
             
             % output window
+        end
+        
+        function print(self,varargin)
+            old=get(self.chat_box,'string');
+            new=varargin{1};
+            if nargin>=3&&~isempty(varargin{2})
+                overwrite=varargin{2};
+            else
+                overwrite=0;
+            end
             
+            if nargin>=4&&~isempty(varargin{3})
+                len=varargin{3};
+            else
+                len=0;
+            end
+            if overwrite==1
+                new=[repmat('\b',len,1) new];
+            end
+            out=[{new} old'];
+            set(self.chat_box,'string',out)
+            drawnow
+        end
+        
+        function clear_box(self,varargin)
+            set(self.chat_box,'string','')
         end
         
         function set_folder(self,varargin)
@@ -155,10 +187,11 @@ classdef trajectory_class < handle
             self.database_path_rel=saveName;
             self.database_path_abs=fullfile(self.root_folder,saveName);
             if exist(saveName,'file')
-                %error(['File ' saveName ' exists...'])
+                self.print(['Warning: File ' saveName ' exists...'])
                 %self.import_data()
             else
                 tools.savec(saveName)
+                self.print(sprintf('Data saved to %s ...',saveName))
             end
         end
         
@@ -168,7 +201,7 @@ classdef trajectory_class < handle
             %%% Find all files in data_folder
             tic
             self.all_files=tools.rdir([self.raw_folder filesep '**' filesep '**']);
-            toc
+            self.print(sprintf('File scanning took %.f sec',toc))
             self.nFiles=length(self.all_files);
         end
         
@@ -181,7 +214,7 @@ classdef trajectory_class < handle
             for iFile=1:self.nFiles
                 [~,~,extensions{iFile}]=fileparts(self.all_files(iFile).name);
             end
-            toc
+            self.print(sprintf('File parsing took %.f sec',toc))
             
             % Determine most common file type
             [mapping,labels]=tools.getMapping(extensions);
@@ -200,9 +233,9 @@ classdef trajectory_class < handle
                 self.file_extension=type_vector{self.file_type};
                 
                 %%% and show what we did to solve the problem
-                disp(labels)
+                self.print(labels)
                 tabulate(mapping)
-                fprintf('Ignoring %d files... \n',sum(mapping~=sel_type))
+                self.print(sprintf('Ignoring %d files...',sum(mapping~=sel_type)))
             end
         end
         
@@ -224,9 +257,9 @@ classdef trajectory_class < handle
                     self.set_cols2read(-1);
                     self.read_xlsx_data(load_name)
                 case 2
-                    disp('*.xls not implemented...')
+                    self.print('*.xls not implemented...')
                 case 3
-                    disp('*.csv not implemented...')
+                    self.print('*.csv not implemented...')
                 case 4
                     self.set_cols2read(-1);
                     self.read_txt_data(load_name);
@@ -278,7 +311,7 @@ classdef trajectory_class < handle
                 sel=[];
             end
             if isempty(sel)
-                disp('Column selection was reset...')
+                self.print('Column selection was reset...')
             end
             self.col_names_selection=find(sel);
         end
@@ -302,10 +335,10 @@ classdef trajectory_class < handle
                                 self.read_xlsx_data(load_name)
                             end
                         case 2
-                            disp('*.xls not implemented...')
+                            self.print('*.xls not implemented...')
                             self.read_xls_data(load_name)
                         case 3
-                            disp('*.csv not implemented...')
+                            self.print('*.csv not implemented...')
                         case 4
                             self.read_txt_data(load_name)
                     end
@@ -324,7 +357,7 @@ classdef trajectory_class < handle
         end
         
         function res=import_data(self,varargin)
-            self.database_path_abs
+            self.print(sprintf('Data imported from %s ',self.database_path_abs))
             if exist(self.database_path_abs,'file')==2
                 S=load(self.database_path_abs,'nTracks','track_data','col_names_selection');
                 self.nTracks=S.nTracks;
@@ -461,7 +494,7 @@ classdef trajectory_class < handle
                 selected_cols=find(ones(nColNames,1));
                 self.col_names_selection=selected_cols;
                 self.nData_cols=length(self.col_names_selection);
-                disp('Autofind number of columns...')
+                self.print('Autofind number of columns...')
             else
                 selected_cols=self.col_names_selection;
             end
@@ -475,8 +508,8 @@ classdef trajectory_class < handle
                         cell_data=txt_data(iRD).parts{iCN};
                         raw_data(iRD).(col_names{iCN})=str2double(cell_data);
                     catch
-                        txt_data.line
-                        disp('no data')
+                        self.print(txt_data.line)
+                        self.print('no data')
                     end
                 end
             end
@@ -525,7 +558,7 @@ classdef trajectory_class < handle
                     end
                 end
             end
-            fprintf('Corrected %3.2f%% files \n',mean(corrected_files))
+            self.print(sprintf('Corrected %3.2f%% files',mean(corrected_files)))
         end
         
         function get_sample_rate(self,varargin)
@@ -548,7 +581,7 @@ classdef trajectory_class < handle
                         error('Non matching sampling rates')
                     end
                 end
-                fprintf('Resampled frame rate from %dHz to %dHz. \n',[self.sample_rate new_sample_rate])
+                self.print(sprintf('Resampled frame rate from %dHz to %dHz.',[self.sample_rate new_sample_rate]))
             end
         end
         
@@ -581,7 +614,7 @@ classdef trajectory_class < handle
         function extract_parameters(self,varargin)
             %Prior=self.PriorKnowledge;
             for iTrack=1:self.nFiles
-                iTrack
+                %self.print(sprintf('%04d',iTrack))
                 if self.config.Probe_trial==0
                     data=self.track_data(iTrack).resampled_data;
                 else
@@ -605,13 +638,13 @@ classdef trajectory_class < handle
         function classify_track(self,varargin)
             tic
             if isempty(self.SVMmodels)
-                disp('Loading big model file...')
+                self.print('Loading big model file...')
                 modelName=['models/SVMclassifierMWMdata_nIter_' num2str(self.nIter) '_oldModel.mat'];
                 %load(modelName,'SVMmodels','perfMatrix','classificationStrings','COMP','nComp','class_vector')
                 S=load(modelName,'SVMmodels','classificationStrings');
                 self.SVMmodels=S.SVMmodels;
                 self.classificationStrings=S.classificationStrings;
-                toc
+                self.print(sprintf('Loaded SVMmodels in %.1f sec',toc))
             end
             
             %%% do classification
@@ -625,18 +658,19 @@ classdef trajectory_class < handle
         
         function save_data(self,varargin)
             %dataset=self;
-            self.database_path_abs
+            self.print(sprintf('Data saved to: %s ',self.database_path_abs))
             self.export_data(self.database_path_abs)
             %save(self.database_path_abs,'dataset')
         end
         
         function create_output(self,varargin)
             if self.config.Probe_trial==0
-                save_name=fullfile(self.root_folder,'files','output',sprintf('%s.txt',self.database_name))
+                save_name=fullfile(self.root_folder,'files','output',sprintf('%s.txt',self.database_name));
             else
-                save_name=fullfile(self.root_folder,'files','output',sprintf('%s_probe.txt',self.database_name))
+                save_name=fullfile(self.root_folder,'files','output',sprintf('%s_probe.txt',self.database_name));
             end
             tools.savec(save_name)
+            self.print(sprintf('Output file location: %s ',save_name))
             fid=fopen(save_name,'w');
             for iTrack=1:self.nFiles
                 if self.config.Probe_trial==0
@@ -647,9 +681,18 @@ classdef trajectory_class < handle
                     track_classification=self.track_classification_vector_probe;
                 end
                 latency=range(data(:,1));
-                fprintf(fid,'%s ; %3.2f ;  %d \n',self.file_names(iTrack).name,latency,track_classification(iTrack));
+                fprintf(fid,'%s ; %3.2f ;  %d',self.file_names(iTrack).name,latency,track_classification(iTrack));
             end
             fclose(fid);
+        end
+        
+        function open_result(self,varargin)
+            folder_name=fullfile(self.root_folder,'files','output');
+            if ispc
+                winopen(folder_name)
+            else
+                system(['open ' folder_name]);
+            end
         end
         
         function plot_track(self,varargin)
@@ -799,36 +842,50 @@ classdef trajectory_class < handle
         
         % commands for data processing
         function load_data_cb(self,varargin)
-            self.save_config('latest.mat') % store current config
-            self.file_scanner()
-            self.file_parser()
-            self.sample_data(1)
-            self.set_cols2read(1:4)
-            self.read_data()
-            self.fill_the_gaps()
-            self.resample_data()
-            self.save_data()
+            try
+                self.save_config('latest.mat') % store current config
+                self.file_scanner()
+                self.file_parser()
+                self.sample_data(1)
+                self.set_cols2read(1:4)
+                self.read_data()
+                self.print('Filling gaps...')
+                self.fill_the_gaps()
+                self.print('Resampling tracks...')
+                self.resample_data()
+                self.save_data()
+            catch
+                E=lasterror;
+                self.print(sprintf('ERROR: %s',E.message))
+            end
         end
         
         function process_data_cb(self,varargin)
-            self.save_config('latest.mat') % store current config
-            
-            if self.config.Probe_trial==true
-                self.get_latency_firstCrossing()
-                self.track_selector()
+            try
+                self.save_config('latest.mat') % store current config
+                
+                if self.config.Probe_trial==true
+                    self.get_latency_firstCrossing()
+                    self.track_selector()
+                end
+                
+                %% extract parameters
+                self.print('Extracting parameters...')
+                self.extract_parameters()
+                
+                %% get track classification
+                self.print('Classifying tracks...')
+                self.classify_track()
+                
+                %% Save data to file
+                self.save_data()
+                
+                %% save output file
+                self.create_output()
+            catch
+                E=lasterror;
+                self.print(sprintf('ERROR: %s',E.message))
             end
-            
-            %% extract parameters
-            self.extract_parameters()
-            
-            %% get track classification
-            self.classify_track()
-            
-            %% Save data to file
-            self.save_data()
-            
-            %% save output file
-            self.create_output()
         end
         
     end
