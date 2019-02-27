@@ -13,7 +13,7 @@ decisionMatrix=zeros(nClasses,nTest,nIter);
 t0=clock;
 for pair_index=1:nPairs    
     %progress(pair_index,nPairs,t0)
-    pair_index
+    %pair_index
         
     class1=pairs(pair_index,1);
     class2=pairs(pair_index,2);
